@@ -1,0 +1,1124 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(45deg, #E0E7FF, #F3E8FF, #E0E7FF);
+            background-size: 200% 200%;
+            animation: gradientAnimation 15s ease infinite;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .neumorphic {
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.1), -5px -5px 15px rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .neumorphic:hover {
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.15), -2px -2px 10px rgba(255, 255, 255, 0.7);
+            transform: translateY(-2px);
+        }
+
+        .task-card {
+            transition: all 0.3s ease;
+        }
+
+        .task-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            filter: brightness(1.05);
+        }
+
+        .modal-backdrop {
+            backdrop-filter: blur(5px);
+        }
+
+        .floating-label-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .floating-label {
+            position: absolute;
+            top: 0;
+            left: 0.75rem;
+            transform: translateY(0.75rem);
+            transition: all 0.2s ease-out;
+            color: #6B7280;
+            pointer-events: none;
+        }
+
+        .floating-input:focus + .floating-label,
+        .floating-input:not(:placeholder-shown) + .floating-label {
+            transform: translateY(-0.5rem) scale(0.85);
+            color: #4F46E5;
+            background: white;
+            padding: 0 0.25rem;
+        }
+
+        .pulse {
+            animation: pulseAnimation 2s infinite;
+        }
+
+        @keyframes pulseAnimation {
+            0% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(79, 70, 229, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
+        }
+
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 1s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .text-shadow-sm {
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-section:hover {
+            transform: scale(1.02);
+            background: rgba(255, 255, 255, 0.95);
+            transition: all 0.3s ease;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 9999px;
+            overflow: hidden;
+            height: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(to right, #4f46e5, #a855f7);
+            transition: width 0.5s ease-in-out;
+        }
+
+        .header-photo {
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="font-['Poppins'] min-h-screen flex justify-center">
+    <div class="max-w-5xl w-full mx-4 glassmorphism rounded-3xl p-8 my-8 fade-in">
+        <!-- Header Section -->
+        <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-2xl rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 border border-indigo-200">
+            <!-- Left: Photo -->
+            <div class="flex-shrink-0">
+                <img id="headerPhoto" src="https://via.placeholder.com/80" alt="Header Photo" class="w-20 h-20 rounded-full header-photo shadow-lg">
+            </div>
+            <!-- Center: SSC CGL Heading -->
+            <div class="flex flex-col items-center md:items-start space-y-2">
+                <h1 class="text-2xl md:text-3xl font-['Playfair_Display'] font-bold text-white drop-shadow-md">SSC CGL Study Planner</h1>
+            </div>
+            <!-- Right: TARGET ASO and Edit -->
+            <div class="flex flex-col items-center md:items-end space-y-2">
+                <span class="text-sm md:text-base font-['Playfair_Display'] font-semibold text-yellow-200 drop-shadow-md">TARGET: ASO</span>
+                <div class="text-right">
+                    <button onclick="toggleEditForm()" class="text-sm text-white hover:text-gray-100 underline drop-shadow-md transition duration-300">Edit</button>
+                    <!-- Edit Form (Hidden by Default) -->
+                    <div id="editForm" class="hidden mt-2 bg-indigo-600 p-4 rounded-lg shadow-lg">
+                        <div class="space-y-4">
+                            <div class="floating-label-group">
+                                <input id="weekCountInput" type="number" min="1" max="90" value="80" class="floating-input border-2 border-indigo-300 rounded-lg p-2 w-full text-black focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder=" ">
+                                <label for="weekCountInput" class="floating-label text-white text-sm drop-shadow-md">Target Weeks</label>
+                            </div>
+                            <div class="floating-label-group">
+                                <input id="totalDaysInput" type="number" min="1" value="600" class="floating-input border-2 border-indigo-300 rounded-lg p-2 w-full text-black focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder=" ">
+                                <label for="totalDaysInput" class="floating-label text-white text-sm drop-shadow-md">Total Weekdays (Day n/m)</label>
+                            </div>
+                            <div class="floating-label-group">
+                                <input id="startDateInput" type="date" value="2025-06-01" class="floating-input border-2 border-indigo-300 rounded-lg p-2 w-full text-black focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder=" ">
+                                <label for="startDateInput" class="floating-label text-white text-sm drop-shadow-md">Start Date</label>
+                            </div>
+                            <div class="floating-label-group">
+                                <input id="headerPhotoInput" type="text" class="floating-input border-2 border-indigo-300 rounded-lg p-2 w-full text-black focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder=" ">
+                                <label for="headerPhotoInput" class="floating-label text-white text-sm drop-shadow-md">Header Photo URL</label>
+                            </div>
+                            <div class="flex justify-end space-x-2">
+                                <button onclick="toggleEditForm()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition duration-300 text-sm">Cancel</button>
+                                <button onclick="saveSettings()" class="px-4 py-2 bg-indigo-800 text-white rounded-lg hover:bg-indigo-900 transition duration-300 text-sm">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Date, Day Count, and Time Section -->
+        <div class="mt-4 flex justify-between items-center bg-indigo-600/30 rounded-lg p-4 text-white">
+            <span id="currentDate" class="text-lg font-['Playfair_Display'] drop-shadow-md">Tuesday, June 03, 2025</span>
+            <span id="currentDayCount" class="text-lg font-['Playfair_Display'] drop-shadow-md">Day 3/600</span>
+            <span id="currentTime" class="text-lg font-['Playfair_Display'] drop-shadow-md"></span>
+        </div>
+
+        <!-- Week and Day Navigation -->
+        <div class="bg-white/90 shadow-2xl rounded-2xl p-6 mt-8 flex flex-col space-y-6 border border-gray-100">
+            <!-- Week Selection -->
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <span class="font-semibold text-gray-800 text-xl font-['Playfair_Display'] text-shadow-sm">Week:</span>
+                    <select id="weekSelect" onchange="updateWeek()" class="border-2 border-indigo-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white/50">
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+            </div>
+            <!-- Day Buttons -->
+            <div class="flex flex-wrap justify-center gap-3" id="dayButtons">
+                <!-- Day buttons will be populated dynamically -->
+            </div>
+        </div>
+
+        <!-- Add Task and Reset Buttons -->
+        <div class="mt-8 flex justify-between items-center">
+            <button onclick="showResetConfirm()" class="px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition duration-300">
+                Reset Week
+            </button>
+            <button id="addTaskButton" onclick="toggleAddTaskForm()" class="px-6 py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition duration-300 pulse">
+                Add Task
+            </button>
+        </div>
+
+        <!-- Add Task Form (Hidden by Default) -->
+        <div id="addTaskForm" class="bg-white/90 shadow-2xl rounded-2xl p-6 mt-8 hidden border border-gray-100">
+            <h3 class="font-bold text-2xl text-gray-800 mb-6 font-['Playfair_Display'] text-shadow-sm">Add New Task</h3>
+            <div class="space-y-6">
+                <div class="floating-label-group">
+                    <input id="taskSubject" type="text" class="floating-input border-2 border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder=" ">
+                    <label for="taskSubject" class="floating-label font-semibold text-gray-800 text-lg text-shadow-sm">Subject</label>
+                </div>
+                <div class="floating-label-group">
+                    <input id="taskTopic" type="text" class="floating-input border-2 border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder=" ">
+                    <label for="taskTopic" class="floating-label font-semibold text-gray-800 text-lg text-shadow-sm">Description</label>
+                </div>
+                <div class="floating-label-group">
+                    <input id="taskDetails" type="text" class="floating-input border-2 border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder=" ">
+                    <label for="taskDetails" class="floating-label font-semibold text-gray-800 text-lg text-shadow-sm">Details</label>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="toggleAddTaskForm()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition duration-300">Cancel</button>
+                    <button onclick="addTask()" class="px-4 py-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-lg hover:bg-indigo-600 transition duration-300">Submit</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section, Statistics, and Progress Bar -->
+        <div class="bg-white/90 shadow-2xl rounded-2xl p-6 mt-8 flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0 border border-gray-100 stats-section">
+            <div class="flex items-center space-x-3">
+                <span class="font-bold text-xl text-gray-800 font-['Playfair_Display'] text-shadow-sm">Filter Tasks:</span>
+                <select id="taskFilter" onchange="updateTasks()" class="border-2 border-gray-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white/50">
+                    <option value="all" selected>All</option>
+                    <option value="completed">Completed</option>
+                    <option value="pending">Pending</option>
+                </select>
+            </div>
+            <div class="flex items-center space-x-2">
+                <span class="font-bold text-xl text-gray-800 font-['Playfair_Display'] text-shadow-sm">Task:</span>
+                <span id="taskCount" class="text-xl text-gray-800">0/0</span>
+            </div>
+            <div class="text-gray-800 text-sm space-y-2">
+                <div class="space-x-2">
+                    <span id="statsTotal">Total: 0</span> | 
+                    <span id="statsCompleted">Completed: 0</span> | 
+                    <span id="statsPercentage">Completion: 0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div id="progressBarFill" class="progress-bar-fill" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task List -->
+        <div id="taskList" class="mt-8 space-y-6 mb-8">
+            <!-- Tasks will be dynamically added here -->
+        </div>
+
+        <!-- Task Details Modal (Hidden by Default) -->
+        <div id="taskDetailsModal" class="fixed inset-0 bg-black/50 modal-backdrop flex items-center justify-center hidden">
+            <div class="bg-white/90 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-indigo-100">
+                <h3 class="font-bold text-2xl text-gray-800 mb-4 font-['Playfair_Display'] text-shadow-sm">Task Details</h3>
+                <div id="taskDetailsContent" class="space-y-4">
+                    <!-- Task details will be populated here -->
+                </div>
+                <div class="flex justify-end mt-6">
+                    <button onclick="closeTaskDetailsModal()" class="px-4 py-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-lg hover:bg-indigo-600 transition duration-300">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal (Hidden by Default) -->
+        <div id="deleteConfirmModal" class="fixed inset-0 bg-black/50 modal-backdrop flex items-center justify-center hidden">
+            <div class="bg-white/90 rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-indigo-100">
+                <h3 class="font-bold text-2xl text-gray-800 mb-4 font-['Playfair_Display'] text-shadow-sm">Confirm Deletion</h3>
+                <p class="text-gray-700 mb-6">Are you sure you want to delete this task?</p>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="cancelDelete()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition duration-300">Cancel</button>
+                    <button onclick="confirmDelete()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300">OK</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reset Confirmation Modal (Hidden by Default) -->
+        <div id="resetConfirmModal" class="fixed inset-0 bg-black/50 modal-backdrop flex items-center justify-center hidden">
+            <div class="bg-white/90 rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-indigo-100">
+                <h3 class="font-bold text-2xl text-gray-800 mb-4 font-['Playfair_Display'] text-shadow-sm">Confirm Reset</h3>
+                <p class="text-gray-700 mb-6">Are you sure you want to reset all tasks for this week? This action cannot be undone.</p>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="cancelReset()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition duration-300">Cancel</button>
+                    <button onclick="confirmReset()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let startDate = new Date('2025-06-01'); // User-requested start date
+        let currentWeek = 1; // Default week set to 1
+        let currentDay = 'Tu';
+        let totalWeeks = 80;
+        let totalWeekdays = 600; // From previous settings
+        const totalDays = 7; // Fixed to 7 days (Mo to Su)
+        const baseDays = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+        const TODAY_DATE = new Date('2025-06-03T11:19:00+05:30'); // June 3, 2025, 11:19 AM IST
+        let allDays = baseDays; // Always all 7 days
+        let tasks = {};
+        let pendingDelete = null;
+        let pendingReset = null;
+        let headerPhotoUrl = 'https://via.placeholder.com/80'; // Default placeholder
+
+        // Softer pastel rainbow colors for each day (Mo to Su)
+        const dayColors = {
+            'Mo': { bg: 'bg-red-300', hover: 'hover:bg-red-400' },
+            'Tu': { bg: 'bg-orange-300', hover: 'hover:bg-orange-400' },
+            'We': { bg: 'bg-yellow-300', hover: 'hover:bg-yellow-400' },
+            'Th': { bg: 'bg-green-300', hover: 'hover:bg-green-400' },
+            'Fr': { bg: 'bg-blue-300', hover: 'hover:bg-blue-400' },
+            'Sa': { bg: 'bg-indigo-300', hover: 'hover:bg-indigo-400' },
+            'Su': { bg: 'bg-purple-300', hover: 'hover:bg-purple-400' }
+        };
+
+        // Test localStorage availability
+        function testLocalStorage() {
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                console.log('localStorage is available and working.');
+                return true;
+            } catch (e) {
+                console.error('localStorage is not available:', e);
+                alert('localStorage is not available in your browser. This may prevent the Study Planner from saving tasks. Try disabling private/incognito mode or enabling localStorage.');
+                return false;
+            }
+        }
+
+        // Load header photo URL from localStorage
+        function loadHeaderPhoto() {
+            try {
+                const savedPhotoUrl = localStorage.getItem('plannerHeaderPhoto');
+                if (savedPhotoUrl) {
+                    headerPhotoUrl = savedPhotoUrl;
+                    document.getElementById('headerPhoto').src = headerPhotoUrl;
+                    document.getElementById('headerPhotoInput').value = headerPhotoUrl;
+                    console.log('Loaded header photo URL from localStorage:', headerPhotoUrl);
+                } else {
+                    console.log('No header photo URL found in localStorage, using default.');
+                }
+            } catch (error) {
+                console.error('Error loading header photo URL from localStorage:', error);
+                alert('Failed to load header photo URL. Using default placeholder.');
+            }
+        }
+
+        // Save header photo URL to localStorage
+        function saveHeaderPhoto() {
+            try {
+                localStorage.setItem('plannerHeaderPhoto', headerPhotoUrl);
+                console.log('Saved header photo URL to localStorage:', headerPhotoUrl);
+            } catch (error) {
+                console.error('Error saving header photo URL to localStorage:', error);
+                alert('Failed to save header photo URL. Changes may not persist.');
+            }
+        }
+
+        // Load start date from localStorage
+        function loadStartDate() {
+            try {
+                const savedStartDate = localStorage.getItem('plannerStartDate');
+                if (savedStartDate) {
+                    startDate = new Date(savedStartDate);
+                    startDate.setHours(0, 0, 0, 0); // Normalize to start of day
+                    console.log('Loaded startDate from localStorage:', startDate.toISOString());
+                } else {
+                    console.log('No startDate found in localStorage, using default:', startDate.toISOString());
+                }
+                document.getElementById('startDateInput').value = startDate.toISOString().split('T')[0];
+            } catch (error) {
+                console.error('Error loading startDate from localStorage:', error);
+                alert('Failed to load start date. Using default start date.');
+            }
+        }
+
+        // Load total weeks from localStorage
+        function loadTotalWeeks() {
+            try {
+                const savedTotalWeeks = localStorage.getItem('plannerTotalWeeks');
+                if (savedTotalWeeks) {
+                    totalWeeks = parseInt(savedTotalWeeks);
+                    if (isNaN(totalWeeks) || totalWeeks < 1) {
+                        totalWeeks = 80;
+                    }
+                    console.log('Loaded totalWeeks from localStorage:', totalWeeks);
+                } else {
+                    console.log('No totalWeeks found in localStorage, using default:', totalWeeks);
+                }
+                document.getElementById('weekCountInput').value = totalWeeks;
+            } catch (error) {
+                console.error('Error loading totalWeeks from localStorage:', error);
+                alert('Failed to load total weeks. Using default value.');
+            }
+        }
+
+        // Load total weekdays from localStorage
+        function loadTotalWeekdays() {
+            try {
+                const savedTotalWeekdays = localStorage.getItem('plannerTotalWeekdays');
+                if (savedTotalWeekdays) {
+                    totalWeekdays = parseInt(savedTotalWeekdays);
+                    if (isNaN(totalWeekdays) || totalWeekdays < 1) {
+                        totalWeekdays = totalWeeks * 6; // Default: 6 weekdays per week
+                    }
+                    console.log('Loaded totalWeekdays from localStorage:', totalWeekdays);
+                } else {
+                    console.log('No totalWeekdays found in localStorage, using default:', totalWeekdays);
+                }
+                document.getElementById('totalDaysInput').value = totalWeekdays;
+            } catch (error) {
+                console.error('Error loading totalWeekdays from localStorage:', error);
+                alert('Failed to load total weekdays. Using default value.');
+            }
+        }
+
+        // Helper function to get the day of the week (0 = Sun, 1 = Mon, ..., 6 = Sat)
+        function getDayOfWeek(date) {
+            return date.getDay();
+        }
+
+        // Function to count weekdays (Mo-Sa) between two dates
+        function countWeekdaysBetween(start, end) {
+            let count = 0;
+            let currentDate = new Date(start);
+            while (currentDate <= end) {
+                const dayOfWeek = getDayOfWeek(currentDate);
+                if (dayOfWeek !== 0) { // Exclude Sunday (0)
+                    count++;
+                }
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            return count;
+        }
+
+        // Function to calculate the current day number (n) excluding Sundays
+        function calculateCurrentDayNumber() {
+            const currentDate = calculateDate(currentWeek, currentDay);
+            const days = countWeekdaysBetween(startDate, currentDate);
+            return days;
+        }
+
+        // Function to calculate the date based on the selected week and day
+        function calculateDate(week, day) {
+            const dayIndex = baseDays.indexOf(day);
+            const totalDaysInWeeks = (week - 1) * 7 + dayIndex; // 7 days per week, week starts at 1
+            let currentDate = new Date(startDate);
+            currentDate.setDate(currentDate.getDate() + totalDaysInWeeks);
+            return currentDate;
+        }
+
+        // Function to calculate the current week and day based on today's date
+        function calculateCurrentWeekAndDay() {
+            const totalDaysSinceStart = Math.floor((TODAY_DATE - startDate) / (1000 * 60 * 60 * 24));
+            if (totalDaysSinceStart < 0) {
+                currentWeek = 1;
+                currentDay = baseDays[0];
+                return;
+            }
+
+            // Calculate the current week (starting from 1)
+            currentWeek = Math.floor(totalDaysSinceStart / 7) + 1;
+            if (currentWeek > totalWeeks) {
+                currentWeek = totalWeeks;
+            }
+
+            // Calculate the current day
+            const startDayIndex = getDayOfWeek(startDate);
+            const todayDayIndex = getDayOfWeek(TODAY_DATE);
+            const daysIntoWeek = totalDaysSinceStart % 7;
+            const adjustedDayIndex = (startDayIndex + daysIntoWeek) % 7;
+            currentDay = baseDays[adjustedDayIndex];
+
+            // Ensure currentDay aligns with TODAY_DATE's actual day of the week
+            const expectedDayIndex = getDayOfWeek(TODAY_DATE);
+            const expectedDay = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'][expectedDayIndex];
+            currentDay = expectedDay;
+        }
+
+        // Function to update the date and day display in the header
+        function updateDateDisplay() {
+            const date = calculateDate(currentWeek, currentDay);
+            document.getElementById('currentDate').textContent = date.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            // Update Day n/m
+            const currentDayNumber = calculateCurrentDayNumber();
+            document.getElementById('currentDayCount').textContent = `Day ${currentDayNumber}/${totalWeekdays}`;
+        }
+
+        // Function to update the time display in the header
+        function updateTimeDisplay() {
+            const now = new Date(TODAY_DATE.getTime() + (Date.now() - TODAY_DATE.getTime()));
+            const hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const hours12 = hours % 12 || 12;
+            const timeString = `${hours12}:${minutes}:${seconds} ${ampm} IST`;
+            document.getElementById('currentTime').textContent = timeString;
+        }
+
+        // Update time every second
+        setInterval(updateTimeDisplay, 1000);
+
+        // Load tasks from localStorage or initialize with an empty structure
+        function loadTasks() {
+            try {
+                const savedTasks = localStorage.getItem('plannerTasks');
+                if (savedTasks) {
+                    tasks = JSON.parse(savedTasks);
+                    console.log('Loaded tasks from localStorage:', tasks);
+                    // Ensure all tasks have the required properties and remove target task fields
+                    Object.keys(tasks).forEach(week => {
+                        Object.keys(tasks[week]).forEach(day => {
+                            tasks[week][day] = tasks[week][day].map(task => {
+                                // Keep only regular task properties
+                                return {
+                                    subject: task.subject || 'Unknown',
+                                    topic: task.topic || task.desc1 || 'No description provided',
+                                    details: task.details || task.desc2 || 'No details provided',
+                                    subjectColor: task.subjectColor || 'text-gray-800',
+                                    completed: task.completed || null
+                                };
+                            });
+                        });
+                    });
+                    // Remove "Week - 0" if it exists
+                    if (tasks['Week - 0']) {
+                        delete tasks['Week - 0'];
+                        saveTasks();
+                    }
+                } else {
+                    console.log('No tasks found in localStorage, initializing empty tasks structure.');
+                    initializeTasks();
+                }
+            } catch (error) {
+                console.error('Error loading tasks from localStorage:', error);
+                alert('Failed to load tasks. Initializing with an empty structure.');
+                initializeTasks();
+            }
+        }
+
+        // Initialize the tasks structure for all weeks and days
+        function initializeTasks() {
+            tasks = {};
+            for (let i = 1; i <= totalWeeks; i++) { // Start from 1
+                tasks[`Week - ${i}`] = {};
+                for (let day of baseDays.slice(0, 6)) { // Only Mo to Sa for tasks
+                    tasks[`Week - ${i}`][day] = [];
+                }
+            }
+            console.log('Initialized tasks structure:', tasks);
+            saveTasks();
+        }
+
+        // Save tasks to localStorage
+        function saveTasks() {
+            try {
+                localStorage.setItem('plannerTasks', JSON.stringify(tasks));
+                console.log('Saved tasks to localStorage:', tasks);
+            } catch (error) {
+                console.error('Error saving tasks to localStorage:', error);
+                alert('Failed to save tasks. Changes may not persist.');
+            }
+        }
+
+        // Save total weeks to localStorage
+        function saveTotalWeeks() {
+            try {
+                localStorage.setItem('plannerTotalWeeks', totalWeeks.toString());
+                console.log('Saved totalWeeks to localStorage:', totalWeeks);
+            } catch (error) {
+                console.error('Error saving totalWeeks to localStorage:', error);
+                alert('Failed to save total weeks. Changes may not persist.');
+            }
+        }
+
+        // Save total weekdays to localStorage
+        function saveTotalWeekdays() {
+            try {
+                localStorage.setItem('plannerTotalWeekdays', totalWeekdays.toString());
+                console.log('Saved totalWeekdays to localStorage:', totalWeekdays);
+            } catch (error) {
+                console.error('Error saving totalWeekdays to localStorage:', error);
+                alert('Failed to save total weekdays. Changes may not persist.');
+            }
+        }
+
+        function toggleEditForm() {
+            const form = document.getElementById('editForm');
+            form.classList.toggle('hidden');
+        }
+
+        function saveSettings() {
+            const newStartDate = document.getElementById('startDateInput').value;
+            if (newStartDate) {
+                const tempDate = new Date(newStartDate);
+                tempDate.setHours(0, 0, 0, 0); // Normalize to start of day
+                startDate = tempDate;
+                try {
+                    localStorage.setItem('plannerStartDate', startDate.toISOString());
+                    console.log('Saved startDate to localStorage:', startDate.toISOString());
+                } catch (error) {
+                    console.error('Error saving startDate to localStorage:', error);
+                    alert('Failed to save start date. Changes may not persist.');
+                }
+                document.getElementById('startDateInput').value = startDate.toISOString().split('T')[0];
+            }
+
+            const newTotalWeeks = parseInt(document.getElementById('weekCountInput').value);
+            if (!isNaN(newTotalWeeks) && newTotalWeeks >= 1 && newTotalWeeks <= 90) {
+                totalWeeks = newTotalWeeks;
+                saveTotalWeeks();
+            }
+
+            const newTotalWeekdays = parseInt(document.getElementById('totalDaysInput').value);
+            if (!isNaN(newTotalWeekdays) && newTotalWeekdays >= 1) {
+                totalWeekdays = newTotalWeekdays;
+                saveTotalWeekdays();
+            }
+
+            const newHeaderPhotoUrl = document.getElementById('headerPhotoInput').value.trim();
+            if (newHeaderPhotoUrl) {
+                headerPhotoUrl = newHeaderPhotoUrl;
+                document.getElementById('headerPhoto').src = headerPhotoUrl;
+                saveHeaderPhoto();
+            }
+
+            updateWeeks();
+            updateDays();
+            calculateCurrentWeekAndDay();
+            updateTasks();
+            updateDateDisplay();
+            toggleEditForm();
+        }
+
+        function updateWeeks() {
+            const weekInput = document.getElementById('weekCountInput');
+            let newTotalWeeks = parseInt(weekInput.value);
+            if (isNaN(newTotalWeeks) || newTotalWeeks < 1) {
+                newTotalWeeks = 1;
+                weekInput.value = 1;
+            } else if (newTotalWeeks > 90) {
+                newTotalWeeks = 90;
+                weekInput.value = 90;
+            }
+            totalWeeks = newTotalWeeks;
+            saveTotalWeeks();
+
+            // Update totalWeekdays based on totalWeeks (if not manually set)
+            if (!document.getElementById('totalDaysInput').value) {
+                totalWeekdays = totalWeeks * 6; // 6 weekdays per week
+                document.getElementById('totalDaysInput').value = totalWeekdays;
+                saveTotalWeekdays();
+            }
+
+            const weekSelect = document.getElementById('weekSelect');
+            weekSelect.innerHTML = '';
+            for (let i = 1; i <= totalWeeks; i++) { // Start from 1
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `Week - ${i}`;
+                if (i === currentWeek) option.selected = true;
+                weekSelect.appendChild(option);
+                if (!tasks[`Week - ${i}`]) {
+                    tasks[`Week - ${i}`] = {};
+                    for (let day of allDays.slice(0, 6)) { // Only Mo to Sa for tasks
+                        tasks[`Week - ${i}`][day] = [];
+                    }
+                }
+            }
+            // Remove weeks beyond totalWeeks
+            Object.keys(tasks).forEach(week => {
+                const weekNum = parseInt(week.split(' - ')[1]);
+                if (weekNum > totalWeeks || weekNum < 1) {
+                    delete tasks[week];
+                }
+            });
+            if (currentWeek > totalWeeks) {
+                currentWeek = totalWeeks;
+                weekSelect.value = currentWeek;
+            }
+            saveTasks();
+            updateTasks();
+            updateDateDisplay();
+        }
+
+        function updateDays() {
+            const dayButtons = document.getElementById('dayButtons');
+            dayButtons.innerHTML = '';
+            for (let day of allDays) {
+                const button = document.createElement('button');
+                button.textContent = day;
+                button.onclick = () => selectDay(day);
+                const colors = dayColors[day];
+                button.className = `px-5 py-2 rounded-full neumorphic transition duration-300 text-white ${
+                    day === currentDay 
+                        ? 'bg-indigo-500 border-2 border-yellow-300 shadow-inner' 
+                        : `${colors.bg} ${colors.hover}`
+                }`;
+                dayButtons.appendChild(button);
+            }
+            selectDay(currentDay);
+            saveTasks();
+            updateTasks();
+            updateDateDisplay();
+        }
+
+        function updateWeek() {
+            currentWeek = parseInt(document.getElementById('weekSelect').value);
+            updateDays();
+            updateTasks();
+            updateDateDisplay();
+        }
+
+        function selectDay(day) {
+            currentDay = day;
+            const buttons = document.getElementById('dayButtons').children;
+            for (let button of buttons) {
+                const dayLabel = button.textContent;
+                const colors = dayColors[dayLabel];
+                if (dayLabel === day) {
+                    button.classList.remove(colors.bg, colors.hover.split(' ')[0]);
+                    button.classList.add('bg-indigo-500', 'border-2', 'border-yellow-300', 'shadow-inner', 'text-white');
+                } else {
+                    button.classList.remove('bg-indigo-500', 'border-2', 'border-yellow-300', 'shadow-inner');
+                    button.classList.add(colors.bg, colors.hover, 'text-white');
+                }
+            }
+            updateAddTaskButton();
+            updateTasks();
+            updateDateDisplay();
+        }
+
+        function updateAddTaskButton() {
+            const addTaskButton = document.getElementById('addTaskButton');
+            addTaskButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            addTaskButton.classList.add('pulse', 'hover:scale-105', 'hover:shadow-xl');
+            addTaskButton.removeAttribute('disabled');
+        }
+
+        function toggleAddTaskForm() {
+            const form = document.getElementById('addTaskForm');
+            form.classList.toggle('hidden');
+            if (form.classList.contains('hidden')) {
+                document.getElementById('taskSubject').value = '';
+                document.getElementById('taskTopic').value = '';
+                document.getElementById('taskDetails').value = '';
+            }
+        }
+
+        function addTask() {
+            const subject = document.getElementById('taskSubject').value.trim();
+            const topic = document.getElementById('taskTopic').value.trim();
+            const details = document.getElementById('taskDetails').value.trim() || 'No details provided';
+            if (subject && topic) {
+                const subjectColor = subject.toUpperCase() === 'MATHS' ? 'text-purple-600' : 
+                                    subject.toUpperCase() === 'ENGLISH' ? 'text-blue-600' : 'text-gray-800';
+                if (!tasks[`Week - ${currentWeek}`][currentDay]) {
+                    tasks[`Week - ${currentWeek}`][currentDay] = [];
+                }
+                tasks[`Week - ${currentWeek}`][currentDay].push({
+                    subject: subject.toUpperCase(),
+                    topic,
+                    details,
+                    subjectColor,
+                    completed: null
+                });
+                toggleAddTaskForm();
+                saveTasks();
+                updateTasks();
+            }
+        }
+
+        function markTaskCompleted(week, day, originalIndex, status) {
+            try {
+                if (!tasks[week] || !tasks[week][day] || originalIndex < 0 || originalIndex >= tasks[week][day].length) {
+                    throw new Error(`Invalid task index: ${originalIndex} for ${week}, ${day}`);
+                }
+                const currentStatus = tasks[week][day][originalIndex].completed;
+                tasks[week][day][originalIndex].completed = currentStatus === status ? null : status;
+                saveTasks();
+                updateTasks();
+            } catch (error) {
+                console.error('Error marking task completed:', error);
+                alert('Failed to update task status. Please try again.');
+            }
+        }
+
+        function showDeleteConfirm(week, day, originalIndex) {
+            pendingDelete = { week, day, originalIndex };
+            document.getElementById('deleteConfirmModal').classList.remove('hidden');
+        }
+
+        function confirmDelete() {
+            if (pendingDelete) {
+                const { week, day, originalIndex } = pendingDelete;
+                try {
+                    if (!tasks[week] || !tasks[week][day] || originalIndex < 0 || originalIndex >= tasks[week][day].length) {
+                        throw new Error(`Invalid task index: ${originalIndex}`);
+                    }
+                    tasks[week][day].splice(originalIndex, 1);
+                    saveTasks();
+                    updateTasks();
+                } catch (error) {
+                    console.error('Error deleting task:', error);
+                    alert('Failed to delete task. Please try again.');
+                }
+                closeDeleteConfirm();
+            }
+        }
+
+        function cancelDelete() {
+            closeDeleteConfirm();
+        }
+
+        function closeDeleteConfirm() {
+            document.getElementById('deleteConfirmModal').classList.add('hidden');
+            pendingDelete = null;
+        }
+
+        function showResetConfirm() {
+            pendingReset = currentWeek;
+            document.getElementById('resetConfirmModal').classList.remove('hidden');
+        }
+
+        function confirmReset() {
+            if (pendingReset !== null) {
+                const week = `Week - ${pendingReset}`;
+                try {
+                    if (!tasks[week]) {
+                        throw new Error(`Week ${week} does not exist in tasks.`);
+                    }
+                    // Reset tasks for the current week
+                    for (let day of baseDays.slice(0, 6)) { // Only Mo to Sa
+                        tasks[week][day] = [];
+                    }
+                    saveTasks();
+                    updateTasks();
+                } catch (error) {
+                    console.error('Error resetting tasks for the week:', error);
+                    alert('Failed to reset tasks. Please try again.');
+                }
+                closeResetConfirm();
+            }
+        }
+
+        function cancelReset() {
+            closeResetConfirm();
+        }
+
+        function closeResetConfirm() {
+            document.getElementById('resetConfirmModal').classList.add('hidden');
+            pendingReset = null;
+        }
+
+        function showTaskDetails(week, day, originalIndex) {
+            const task = tasks[week][day][originalIndex];
+            const status = task.completed === true ? 'Completed' : 
+                          task.completed === false ? 'Pending' : 'Not Started';
+            const modalContent = document.getElementById('taskDetailsContent');
+            modalContent.innerHTML = `
+                <p><span class="font-semibold text-gray-800 text-shadow-sm">Subject:</span> <span class="${task.subjectColor}">${task.subject}</span></p>
+                <p><span class="font-semibold text-gray-800 text-shadow-sm">Topic:</span> ${task.topic}</p>
+                <p><span class="font-semibold text-gray-800 text-shadow-sm">Details:</span> ${task.details}</p>
+                <p><span class="font-semibold text-gray-800 text-shadow-sm">Status:</span> ${status}</p>
+                <p><span class="font-semibold text-gray-800 text-shadow-sm">Week:</span> ${week}</p>
+                <p><span class="font-semibold text-gray-800 text-shadow-sm">Day:</span> ${day}</p>
+            `;
+            document.getElementById('taskDetailsModal').classList.remove('hidden');
+        }
+
+        function closeTaskDetailsModal() {
+            document.getElementById('taskDetailsModal').classList.add('hidden');
+        }
+
+        // Function to extract the first URL from text
+        function getFirstUrlFromText(text) {
+            const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)|((?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?:\/[^\s]*)?)/;
+            const match = text.match(urlRegex);
+            if (match) {
+                let url = match[0];
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    url = 'https://' + url;
+                }
+                return url;
+            }
+            return null;
+        }
+
+        let draggedIndex = null;
+        let isDragging = false;
+
+        function handleDragStart(week, day, index, element) {
+            draggedIndex = index;
+            isDragging = true;
+            element.classList.add('opacity-50');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDragEnd(element) {
+            element.classList.remove('opacity-50');
+            setTimeout(() => { isDragging = false; }, 0);
+        }
+
+        function handleDrop(week, day, index, element) {
+            if (draggedIndex === null || draggedIndex === index) return;
+            const task = tasks[week][day][draggedIndex];
+            tasks[week][day].splice(draggedIndex, 1);
+            tasks[week][day].splice(index, 0, task);
+            draggedIndex = null;
+            saveTasks();
+            updateTasks();
+        }
+
+        function handleTaskClick(week, day, index, e) {
+            if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                console.log('Clicked on a button, preventing URL open');
+                return;
+            }
+            if (isDragging) {
+                console.log('Click event ignored due to drag action');
+                return;
+            }
+            const task = tasks[week][day][index];
+            const url = getFirstUrlFromText(task.details);
+            console.log(`Task clicked - Week: ${week}, Day: ${day}, Index: ${index}, Details: ${task.details}, Extracted URL: ${url}`);
+            if (url) {
+                console.log(`Attempting to open URL: ${url}`);
+                try {
+                    window.open(url, '_blank');
+                } catch (error) {
+                    console.error('Error opening URL:', error);
+                    alert('Failed to open the URL. It might be blocked by your browser. Check the console for details.');
+                }
+            } else {
+                console.log('No URL found in task details');
+            }
+        }
+
+        function updateTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+            
+            const filter = document.getElementById('taskFilter').value;
+            const currentTasks = tasks[`Week - ${currentWeek}`][currentDay] || [];
+            let tasksWithIndices = currentTasks.map((task, index) => ({ task, originalIndex: index }));
+            let filteredTasksWithIndices = tasksWithIndices.filter(({ task }) => {
+                return filter === 'all' || 
+                       (filter === 'completed' && task.completed === true) || 
+                       (filter === 'pending' && task.completed === false);
+            });
+
+            filteredTasksWithIndices.forEach(({ task, originalIndex }) => {
+                const bgColor = task.completed === true ? 'bg-gradient-to-r from-green-200 to-teal-200' : 
+                               task.completed === false ? 'bg-gradient-to-r from-red-200 to-pink-200' : 
+                               'bg-gradient-to-r from-white to-indigo-100';
+
+                const taskDiv = document.createElement('div');
+                taskDiv.draggable = true;
+                const hasUrl = getFirstUrlFromText(task.details);
+                taskDiv.className = `task-card shadow-lg rounded-2xl p-6 flex justify-between items-center transition duration-300 ${bgColor} border border-indigo-100 ${hasUrl ? 'cursor-pointer' : 'cursor-move'}`;
+                taskDiv.setAttribute('draggable', 'true');
+                taskDiv.addEventListener('dragstart', (e) => handleDragStart(`Week - ${currentWeek}`, currentDay, originalIndex, taskDiv));
+                taskDiv.addEventListener('dragover', handleDragOver);
+                taskDiv.addEventListener('dragend', () => handleDragEnd(taskDiv));
+                taskDiv.addEventListener('drop', (e) => handleDrop(`Week - ${currentWeek}`, currentDay, originalIndex, taskDiv));
+                taskDiv.addEventListener('click', (e) => handleTaskClick(`Week - ${currentWeek}`, currentDay, originalIndex, e));
+                taskDiv.innerHTML = `
+                    <div class="flex items-center space-x-4">
+                        <div class="flex flex-col space-y-2">
+                            <button onclick="markTaskCompleted('Week - ${currentWeek}', '${currentDay}', ${originalIndex}, true)" 
+                                    class="w-6 h-6 bg-gradient-to-r from-green-400 to-teal-500 rounded-full hover:bg-green-600 transition duration-300"></button>
+                            <button onclick="markTaskCompleted('Week - ${currentWeek}', '${currentDay}', ${originalIndex}, false)" 
+                                    class="w-6 h-6 bg-gradient-to-r from-red-400 to-pink-500 rounded-full hover:bg-red-600 transition duration-300"></button>
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="${task.subjectColor} font-bold text-xl font-['Playfair_Display']">${task.subject}</span>
+                            </div>
+                            <p class="text-gray-700 text-lg">${task.topic}</p>
+                            <p class="text-gray-600 text-sm italic">${task.details}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button onclick="showTaskDetails('Week - ${currentWeek}', '${currentDay}', ${originalIndex})" 
+                                class="text-gray-500 hover:bg-gray-100 hover:text-gray-700 p-2 rounded-full transition duration-300">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m6 0a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </button>
+                        <button onclick="showDeleteConfirm('Week - ${currentWeek}', '${currentDay}', ${originalIndex})" 
+                                class="text-red-500 hover:bg-red-100 hover:text-red-700 p-2 rounded-full transition duration-300">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+                taskList.appendChild(taskDiv);
+            });
+
+            let totalTasksForDay = 0;
+            let completedTasksForDay = 0;
+            for (let week = 1; week <= totalWeeks; week++) { // Start from 1
+                const weekTasks = tasks[`Week - ${week}`][currentDay] || [];
+                totalTasksForDay += weekTasks.length;
+                completedTasksForDay += weekTasks.filter(task => task.completed === true).length;
+            }
+            document.getElementById('taskCount').textContent = `${completedTasksForDay}/${totalTasksForDay}`;
+
+            const totalDayTasks = currentTasks.length;
+            const completedDayTasks = currentTasks.filter(task => task.completed === true).length;
+            const completionPercentage = totalDayTasks > 0 ? Math.round((completedDayTasks / totalDayTasks) * 100) : 0;
+            document.getElementById('statsTotal').textContent = `Total: ${totalDayTasks}`;
+            document.getElementById('statsCompleted').textContent = `Completed: ${completedDayTasks}`;
+            document.getElementById('statsPercentage').textContent = `Completion: ${completionPercentage}%`;
+
+            // Update the progress bar
+            const progressBarFill = document.getElementById('progressBarFill');
+            progressBarFill.style.width = `${completionPercentage}%`;
+        }
+
+        // Initialize the planner
+        function initializePlanner() {
+            console.log('Starting Study Planner initialization...');
+            if (!testLocalStorage()) {
+                console.error('Cannot proceed with initialization due to localStorage unavailability.');
+                return;
+            }
+
+            loadHeaderPhoto();
+            loadStartDate();
+            loadTotalWeeks();
+            loadTotalWeekdays();
+            loadTasks();
+            calculateCurrentWeekAndDay();
+
+            // Only set default tasks if no tasks exist for the current week and day
+            if (!tasks[`Week - ${currentWeek}`] || !tasks[`Week - ${currentWeek}`]['Mo'] || tasks[`Week - ${currentWeek}`]['Mo'].length === 0) {
+                if (!tasks[`Week - ${currentWeek}`]) {
+                    tasks[`Week - ${currentWeek}`] = {};
+                }
+                tasks[`Week - ${currentWeek}`]['Mo'] = [
+                    { subject: 'MATHS', topic: 'Algebra - 1', details: 'Solve equations 1-5', subjectColor: 'text-purple-600', completed: null },
+                    { subject: 'PHYSICS', topic: 'Mechanics - 1', details: 'Read chapter 1', subjectColor: 'text-gray-800', completed: null }
+                ];
+                console.log(`Set default tasks for Week ${currentWeek}, Day Mo:`, tasks[`Week - ${currentWeek}`]['Mo']);
+                saveTasks();
+            }
+
+            updateWeeks();
+            updateDays();
+            updateTasks();
+            updateDateDisplay();
+            updateTimeDisplay();
+            updateAddTaskButton();
+            console.log('Study Planner initialization completed.');
+        }
+
+        // Run initialization with error handling
+        try {
+            initializePlanner();
+        } catch (error) {
+            console.error('Failed to initialize Study Planner:', error);
+            alert('An error occurred while loading the Study Planner. Please check the console for details and try refreshing the page.');
+        }
+    </script>
+</body>
+</html>

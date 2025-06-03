@@ -1,0 +1,487 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSC CGL Mock Test Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(to bottom right, #e0e7ff, #f3e8ff);
+            min-height: 100vh;
+        }
+        .form-container, .analysis-container, .detailed-analysis {
+            transition: all 0.3s ease;
+        }
+        .form-container:hover, .analysis-container:hover, .detailed-analysis:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        input:focus {
+            outline: none;
+            ring: 2px solid #4f46e5;
+        }
+        button {
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        table tr {
+            transition: background-color 0.2s ease;
+        }
+        table tr:hover {
+            background-color: #f3f4f6;
+        }
+        .date-cell {
+            cursor: pointer;
+            color: #4f46e5;
+        }
+        .date-cell:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body class="font-sans text-gray-800">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <h1 class="text-4xl font-bold text-center text-indigo-600 mb-8">SSC CGL Mock Test Analysis</h1>
+        
+        <div class="form-container bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-6">Enter Mock Test Details</h2>
+            <div class="space-y-4">
+                <div>
+                    <label for="testName" class="block text-sm font-medium text-gray-600">Mock Test Name:</label>
+                    <input type="text" id="testName" class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500" required>
+                </div>
+                <div>
+                    <label for="testDate" class="block text-sm font-medium text-gray-600">Test Date:</label>
+                    <input type="date" id="testDate" class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-600">Quantitative Aptitude (25 Questions):</label>
+                    <div class="flex gap-4">
+                        <div class="w-1/2">
+                            <label for="quantCorrect" class="block text-sm text-gray-500">Correct Answers:</label>
+                            <input type="number" id="quantCorrect" min="0" max="25" required class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500">
+                        </div>
+                        <div class="w-1/2">
+                            <label for="quantIncorrect" class="block text-sm text-gray-500">Incorrect Answers:</label>
+                            <input type="number" id="quantIncorrect" min="0" max="25" required class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500">
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-600">Reasoning (25 Questions):</label>
+                    <div class="flex gap-4">
+                        <div class="w-1/2">
+                            <label for="reasoningCorrect" class="block text-sm text-gray-500">Correct Answers:</label>
+                            <input type="number" id="reasoningCorrect" min="0" max="25" required class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500">
+                        </div>
+                        <div class="w-1/2">
+                            <label for="reasoningIncorrect" class="block text-sm text-gray-500">Incorrect Answers:</label>
+                            <input type="number" id="reasoningIncorrect" min="0" max="25" required class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500">
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-600">English (25 Questions):</label>
+                    <div class="flex gap-4">
+                        <div class="w-1/2">
+                            <label for="englishCorrect" class="block text-sm text-gray-500">Correct Answers:</label>
+                            <input type="number" id="englishCorrect" min="0" max="25" required class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500">
+                        </div>
+                        <div class="w-1/2">
+                            <label for="englishIncorrect" class="block text-sm text-gray-500">Incorrect Answers:</label>
+                            <input type="number" id="englishIncorrect" min="0" max="25" required class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500">
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-600">General Awareness (25 Questions):</label>
+                    <div class="flex gap-4">
+                        <div class="w-1/2">
+                            <label for="gaCorrect" class="block text-sm text-gray-500">Correct Answers:</label>
+                            <input type="number" id="gaCorrect" min="0" max="25" required class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500">
+                        </div>
+                        <div class="w-1/2">
+                            <label for="gaIncorrect" class="block text-sm text-gray-500">Incorrect Answers:</label>
+                            <input type="number" id="gaIncorrect" min="0" max="25" required class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500">
+                        </div>
+                    </div>
+                </div>
+                
+                <button onclick="addTest()" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">Submit</button>
+            </div>
+        </div>
+        
+        <div class="analysis-container bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-6">Analysis</h2>
+            <div class="overflow-x-auto">
+                <table id="testTable" class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-indigo-50">
+                            <th class="border border-gray-300 p-3 text-sm font-semibold text-gray-600">Date & Test Name</th>
+                            <th class="border border-gray-300 p-3 text-sm font-semibold text-gray-600">Quantitative</th>
+                            <th class="border border-gray-300 p-3 text-sm font-semibold text-gray-600">Reasoning</th>
+                            <th class="border border-gray-300 p-3 text-sm font-semibold text-gray-600">English</th>
+                            <th class="border border-gray-300 p-3 text-sm font-semibold text-gray-600">General Awareness</th>
+                            <th class="border border-gray-300 p-3 text-sm font-semibold text-gray-600">Total</th>
+                            <th class="border border-gray-300 p-3 text-sm font-semibold text-gray-600">Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody id="testTableBody"></tbody>
+                </table>
+            </div>
+            <div id="summary" class="mt-6">
+                <h3 class="text-xl font-semibold text-gray-700">Summary</h3>
+                <p id="avgScore" class="text-gray-600">Average Score: -</p>
+                <p id="highestScore" class="text-gray-600">Highest Score: -</p>
+                <p id="lowestScore" class="text-gray-600">Lowest Score: -</p>
+            </div>
+        </div>
+
+        <div id="detailedAnalysis" class="detailed-analysis bg-white rounded-lg shadow-lg p-6 hidden">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-6">Detailed Analysis for <span id="selectedDate"></span> (<span id="selectedTestName"></span>)</h2>
+            
+            <div class="flex flex-col md:flex-row gap-6 mb-6">
+                <div class="w-full md:w-1/3">
+                    <h3 class="text-lg font-semibold text-gray-600 mb-4">Question Stats</h3>
+                    <div class="flex flex-wrap gap-4">
+                        <div class="flex items-center bg-purple-50 rounded-full px-4 py-2">
+                            <span class="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white mr-2">🎯</span>
+                            <p class="text-sm">Score: <span id="detailScore"></span>/200</p>
+                        </div>
+                        <div class="flex items-center bg-teal-50 rounded-full px-4 py-2">
+                            <span class="w-8 h-8 rounded-full bg-teal-500 flex items-center justify-center text-white mr-2">📝</span>
+                            <p class="text-sm">Attempted: <span id="detailAttempted"></span>/100</p>
+                        </div>
+                        <div class="flex items-center bg-green-50 rounded-full px-4 py-2">
+                            <span class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white mr-2">✔️</span>
+                            <p class="text-sm">Accuracy: <span id="detailAccuracy"></span>%</p>
+                        </div>
+                        <div class="flex items-center bg-orange-50 rounded-full px-4 py-2">
+                            <span class="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white mr-2">📈</span>
+                            <p class="text-sm">Percentage: <span id="detailPercentage"></span>%</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full md:w-2/3">
+                    <canvas id="statsChart" class="w-full h-64"></canvas>
+                </div>
+            </div>
+
+            <h3 class="text-lg font-semibold text-gray-600 mb-4">Sectional Summary</h3>
+            <div class="overflow-x-auto">
+                <table id="sectionalTable" class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-indigo-50">
+                            <th class="border border-gray-300 p-3 text-sm font-semibold text-gray-600">Section Name</th>
+                            <th class="border border-gray-300 p-3 text-sm font-semibold text-gray-600">Score</th>
+                            <th class="border border-gray-300 p-3 text-sm font-semibold text-gray-600">Cutoff Score</th>
+                            <th class="border border-gray-300 p-3 text-sm font-semibold text-gray-600">Attempted</th>
+                            <th class="border border-gray-300 p-3 text-sm font-semibold text-gray-600">Correct</th>
+                            <th class="border border-gray-300 p-3 text-sm font-semibold text-gray-600">Incorrect</th>
+                            <th class="border border-gray-300 p-3 text-sm font-semibold text-gray-600">Unattempted</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sectionalTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tests = [];
+        let statsChart = null;
+
+        function addTest() {
+            const name = document.getElementById('testName').value;
+            const testDate = document.getElementById('testDate').value;
+            const quantCorrect = parseFloat(document.getElementById('quantCorrect').value);
+            const quantIncorrect = parseFloat(document.getElementById('quantIncorrect').value);
+            const reasoningCorrect = parseFloat(document.getElementById('reasoningCorrect').value);
+            const reasoningIncorrect = parseFloat(document.getElementById('reasoningIncorrect').value);
+            const englishCorrect = parseFloat(document.getElementById('englishCorrect').value);
+            const englishIncorrect = parseFloat(document.getElementById('englishIncorrect').value);
+            const gaCorrect = parseFloat(document.getElementById('gaCorrect').value);
+            const gaIncorrect = parseFloat(document.getElementById('gaIncorrect').value);
+
+            // Input validation
+            if (!name || !testDate || isNaN(quantCorrect) || isNaN(quantIncorrect) ||
+                isNaN(reasoningCorrect) || isNaN(reasoningIncorrect) ||
+                isNaN(englishCorrect) || isNaN(englishIncorrect) ||
+                isNaN(gaCorrect) || isNaN(gaIncorrect)) {
+                alert("Please fill all fields correctly.");
+                return;
+            }
+
+            // Validate correct + incorrect <= 25 for each section
+            if (quantCorrect + quantIncorrect > 25) {
+                alert("Correct + Incorrect for Quantitative Aptitude must not exceed 25.");
+                return;
+            }
+            if (reasoningCorrect + reasoningIncorrect > 25) {
+                alert("Correct + Incorrect for Reasoning must not exceed 25.");
+                return;
+            }
+            if (englishCorrect + englishIncorrect > 25) {
+                alert("Correct + Incorrect for English must not exceed 25.");
+                return;
+            }
+            if (gaCorrect + gaIncorrect > 25) {
+                alert("Correct + Incorrect for General Awareness must not exceed 25.");
+                return;
+            }
+
+            // Validate non-negative inputs
+            if (quantCorrect < 0 || quantIncorrect < 0 ||
+                reasoningCorrect < 0 || reasoningIncorrect < 0 ||
+                englishCorrect < 0 || englishIncorrect < 0 ||
+                gaCorrect < 0 || gaIncorrect < 0) {
+                alert("Correct and Incorrect answers cannot be negative.");
+                return;
+            }
+
+            // Calculate unattempted questions
+            const quantUnattempted = 25 - (quantCorrect + quantIncorrect);
+            const reasoningUnattempted = 25 - (reasoningCorrect + reasoningIncorrect);
+            const englishUnattempted = 25 - (englishCorrect + englishIncorrect);
+            const gaUnattempted = 25 - (gaCorrect + gaIncorrect);
+
+            // Calculate scores with negative marking (each correct answer is 2 marks, each incorrect deducts 0.5 marks)
+            const quantScore = (quantCorrect * 2) - (quantIncorrect * 0.5);
+            const reasoningScore = (reasoningCorrect * 2) - (reasoningIncorrect * 0.5);
+            const englishScore = (englishCorrect * 2) - (englishIncorrect * 0.5);
+            const gaScore = (gaCorrect * 2) - (gaIncorrect * 0.5);
+            const total = quantScore + reasoningScore + englishScore + gaScore;
+            const percentage = (total / 200) * 100;
+
+            // Log the calculated values for debugging
+            console.log("Quant Score:", quantScore, "Reasoning Score:", reasoningScore, "English Score:", englishScore, "GA Score:", gaScore, "Total:", total);
+
+            // Calculate detailed stats for each section
+            const test = {
+                name: name,
+                date: testDate,
+                quant: {
+                    score: quantScore.toFixed(2),
+                    correct: quantCorrect,
+                    incorrect: quantIncorrect,
+                    unattempted: quantUnattempted,
+                    attempted: quantCorrect + quantIncorrect
+                },
+                reasoning: {
+                    score: reasoningScore.toFixed(2),
+                    correct: reasoningCorrect,
+                    incorrect: reasoningIncorrect,
+                    unattempted: reasoningUnattempted,
+                    attempted: reasoningCorrect + reasoningIncorrect
+                },
+                english: {
+                    score: englishScore.toFixed(2),
+                    correct: englishCorrect,
+                    incorrect: englishIncorrect,
+                    unattempted: englishUnattempted,
+                    attempted: englishCorrect + englishIncorrect
+                },
+                ga: {
+                    score: gaScore.toFixed(2),
+                    correct: gaCorrect,
+                    incorrect: gaIncorrect,
+                    unattempted: gaUnattempted,
+                    attempted: gaCorrect + gaIncorrect
+                },
+                total: total.toFixed(2),
+                percentage: percentage.toFixed(2)
+            };
+
+            tests.push(test);
+            updateTable();
+            updateSummary();
+            clearForm();
+        }
+
+        function updateTable() {
+            const tableBody = document.getElementById('testTableBody');
+            tableBody.innerHTML = '';
+
+            tests.forEach((test, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="border border-gray-300 p-3 date-cell" onclick="showDetailedAnalysis(${index})">${test.date} (${test.name})</td>
+                    <td class="border border-gray-300 p-3">${test.quant.score}</td>
+                    <td class="border border-gray-300 p-3">${test.reasoning.score}</td>
+                    <td class="border border-gray-300 p-3">${test.english.score}</td>
+                    <td class="border border-gray-300 p-3">${test.ga.score}</td>
+                    <td class="border border-gray-300 p-3">${test.total}</td>
+                    <td class="border border-gray-300 p-3">${test.percentage}%</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function updateSummary() {
+            if (tests.length === 0) return;
+
+            const totalScores = tests.map(test => parseFloat(test.total));
+            const avgScore = (totalScores.reduce((a, b) => a + b, 0) / tests.length).toFixed(2);
+            const highestScore = Math.max(...totalScores).toFixed(2);
+            const lowestScore = Math.min(...totalScores).toFixed(2);
+
+            document.getElementById('avgScore').textContent = `Average Score: ${avgScore}`;
+            document.getElementById('highestScore').textContent = `Highest Score: ${highestScore}`;
+            document.getElementById('lowestScore').textContent = `Lowest Score: ${lowestScore}`;
+        }
+
+        function showDetailedAnalysis(index) {
+            console.log("Showing detailed analysis for test index:", index);
+            const test = tests[index];
+            const detailedAnalysis = document.getElementById('detailedAnalysis');
+            detailedAnalysis.classList.remove('hidden');
+
+            // Update question stats
+            document.getElementById('selectedDate').textContent = test.date;
+            document.getElementById('selectedTestName').textContent = test.name;
+            document.getElementById('detailScore').textContent = test.total;
+            document.getElementById('detailPercentage').textContent = test.percentage;
+
+            const totalCorrect = test.quant.correct + test.reasoning.correct + test.english.correct + test.ga.correct;
+            const totalIncorrect = test.quant.incorrect + test.reasoning.incorrect + test.english.incorrect + test.ga.incorrect;
+            const totalUnattempted = test.quant.unattempted + test.reasoning.unattempted + test.english.unattempted + test.ga.unattempted;
+            const totalAttempted = totalCorrect + totalIncorrect;
+            const accuracy = totalAttempted > 0 ? ((totalCorrect / totalAttempted) * 100).toFixed(2) : 0;
+
+            console.log("Total Correct:", totalCorrect, "Total Incorrect:", totalIncorrect, "Total Unattempted:", totalUnattempted, "Accuracy:", accuracy);
+
+            document.getElementById('detailAttempted').textContent = totalAttempted;
+            document.getElementById('detailAccuracy').textContent = accuracy;
+
+            // Update chart
+            if (statsChart) {
+                statsChart.destroy();
+            }
+            const ctx = document.getElementById('statsChart').getContext('2d');
+            statsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Correct', 'Incorrect', 'Unattempted'],
+                    datasets: [{
+                        label: 'Questions',
+                        data: [totalCorrect, totalIncorrect, totalUnattempted],
+                        backgroundColor: ['#34d399', '#f87171', '#9ca3af']
+                    }]
+                },
+                options: {
+                    indexAxis: 'x',
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100 // Total questions = 25 per section × 4 sections = 100
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Update sectional summary
+            const sectionalTableBody = document.getElementById('sectionalTableBody');
+            sectionalTableBody.innerHTML = '';
+
+            const sections = [
+                { name: 'General Intelligence and Reasoning', data: test.reasoning },
+                { name: 'General Awareness', data: test.ga },
+                { name: 'Quantitative Aptitude', data: test.quant },
+                { name: 'English Language & Comprehension', data: test.english }
+            ];
+
+            let totalScore = 0;
+            let sectionTotalAttempted = 0;
+            let sectionTotalCorrect = 0;
+            let sectionTotalIncorrect = 0;
+            let sectionTotalUnattempted = 0;
+
+            sections.forEach(section => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="border border-gray-300 p-3">${section.name}</td>
+                    <td class="border border-gray-300 p-3">${section.data.score}</td>
+                    <td class="border border-gray-300 p-3">-</td>
+                    <td class="border border-gray-300 p-3">${section.data.attempted}</td>
+                    <td class="border border-gray-300 p-3">${section.data.correct}</td>
+                    <td class="border border-gray-300 p-3">${section.data.incorrect}</td>
+                    <td class="border border-gray-300 p-3">${section.data.unattempted}</td>
+                `;
+                sectionalTableBody.appendChild(row);
+
+                // Accumulate totals
+                totalScore += parseFloat(section.data.score);
+                sectionTotalAttempted += section.data.attempted;
+                sectionTotalCorrect += section.data.correct;
+                sectionTotalIncorrect += section.data.incorrect;
+                sectionTotalUnattempted += section.data.unattempted;
+            });
+        }
+
+        function clearForm() {
+            document.getElementById('testName').value = '';
+            document.getElementById('testDate').value = '';
+            document.getElementById('quantCorrect').value = '';
+            document.getElementById('quantIncorrect').value = '';
+            document.getElementById('reasoningCorrect').value = '';
+            document.getElementById('reasoningIncorrect').value = '';
+            document.getElementById('englishCorrect').value = '';
+            document.getElementById('englishIncorrect').value = '';
+            document.getElementById('gaCorrect').value = '';
+            document.getElementById('gaIncorrect').value = '';
+        }
+    </script>
+</body>
+</html>
