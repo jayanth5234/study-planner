@@ -1,0 +1,247 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Playfair+Display:wght@400;700" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(45deg, #E0E7FF, #F3E8FF, #E0E7FF);
+            background-size: 200% 200%;
+            animation: gradientAnimation 15s ease infinite;
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .neumorphic {
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.1), -5px -5px 15px rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .neumorphic:hover {
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.15), -2px -2px 10px rgba(255, 255, 255, 0.7);
+            transform: translateY(-2px);
+        }
+
+        .card {
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 1s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .text-shadow-sm {
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-photo {
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <div class="container mx-auto px-4 py-8 max-w-4xl flex-grow">
+        <!-- Header Section -->
+        <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-2xl rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 border border-indigo-200 mb-4 glassmorphism fade-in">
+            <!-- Left: Photo -->
+            <div class="flex-shrink-0">
+                <img id="headerPhoto" src="https://via.placeholder.com/80" alt="Header Photo" class="w-20 h-20 rounded-full header-photo shadow-lg">
+            </div>
+            <!-- Center: Heading -->
+            <div class="flex flex-col items-center md:items-start space-y-2">
+                <h1 class="text-2xl md:text-3xl font-['Playfair_Display'] font-bold text-white drop-shadow-md">Study Dashboard</h1>
+            </div>
+            <!-- Right: Edit -->
+            <div class="flex flex-col items-center md:items-end space-y-2">
+                <div class="text-right">
+                    <button onclick="toggleEditForm()" class="text-sm text-white hover:text-gray-100 underline drop-shadow-md transition duration-300">Edit</button>
+                    <!-- Edit Form (Hidden by Default) -->
+                    <div id="editForm" class="hidden mt-2 bg-indigo-600 p-4 rounded-lg shadow-lg">
+                        <div class="space-y-4">
+                            <div class="relative">
+                                <input id="headerPhotoInput" type="text" class="border-2 border-indigo-300 rounded-lg p-2 w-full text-black focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Header Photo URL">
+                            </div>
+                            <div class="flex justify-end space-x-2">
+                                <button onclick="toggleEditForm()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition duration-300 text-sm">Cancel</button>
+                                <button onclick="saveHeaderPhoto()" class="px-4 py-2 bg-indigo-800 text-white rounded-lg hover:bg-indigo-900 transition duration-300 text-sm">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Date and Time Section -->
+        <div class="mt-4 flex justify-between items-center bg-indigo-600/30 rounded-lg p-4 text-white mb-8">
+            <span id="currentDate" class="text-lg font-['Playfair_Display'] drop-shadow-md">Tuesday, June 03, 2025</span>
+            <span id="currentTime" class="text-lg font-['Playfair_Display'] drop-shadow-md"></span>
+        </div>
+
+        <!-- Dashboard Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Study Planner Card -->
+            <a href="index.html" class="card bg-white rounded-lg shadow-lg p-6 cursor-pointer neumorphic fade-in">
+                <div class="flex items-center mb-4">
+                    <span class="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white mr-3">📅</span>
+                    <h2 class="text-xl font-semibold text-gray-700 font-['Playfair_Display'] text-shadow-sm">Study Planner</h2>
+                </div>
+                <p class="text-gray-600 mb-4">Plan your study schedule, set daily goals, and track your progress for SSC CGL preparation. Stay organized and achieve your targets efficiently.</p>
+                <div class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md text-center hover:bg-indigo-700 transition duration-200 mt-4">
+                    Go to Study Planner
+                </div>
+            </a>
+
+            <!-- Mock Test Analysis Card -->
+            <a href="mock.html" class="card bg-white rounded-lg shadow-lg p-6 cursor-pointer neumorphic fade-in">
+                <div class="flex items-center mb-4">
+                    <span class="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white mr-3">📊</span>
+                    <h2 class="text-xl font-semibold text-gray-700 font-['Playfair_Display'] text-shadow-sm">Mock Test Analysis</h2>
+                </div>
+                <p class="text-gray-600 mb-4">Analyze your SSC CGL mock test performance, view detailed stats, and identify areas for improvement to boost your scores.</p>
+                <div class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md text-center hover:bg-indigo-700 transition duration-200 mt-4">
+                    Go to Mock Test Analysis
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const TODAY_DATE = new Date('2025-06-03T18:42:00+05:30'); // 06:42 PM IST
+            let headerPhotoUrl = 'https://via.placeholder.com/80';
+
+            // Load header photo from localStorage
+            function loadHeaderPhoto() {
+                try {
+                    const savedPhotoUrl = localStorage.getItem('dashboardHeaderPhoto');
+                    if (savedPhotoUrl) {
+                        headerPhotoUrl = savedPhotoUrl;
+                        document.getElementById('headerPhoto').src = headerPhotoUrl;
+                        document.getElementById('headerPhotoInput').value = headerPhotoUrl;
+                    }
+                } catch (error) {
+                    console.error('Error loading header photo URL from localStorage:', error);
+                }
+            }
+
+            // Save header photo to localStorage
+            function saveHeaderPhoto() {
+                const newHeaderPhotoUrl = document.getElementById('headerPhotoInput').value.trim();
+                if (newHeaderPhotoUrl) {
+                    headerPhotoUrl = newHeaderPhotoUrl;
+                    document.getElementById('headerPhoto').src = headerPhotoUrl;
+                    try {
+                        localStorage.setItem('dashboardHeaderPhoto', headerPhotoUrl);
+                    } catch (error) {
+                        console.error('Error saving header photo URL to localStorage:', error);
+                    }
+                }
+                toggleEditForm();
+            }
+
+            // Toggle edit form visibility
+            function toggleEditForm() {
+                const form = document.getElementById('editForm');
+                form.classList.toggle('hidden');
+            }
+
+            // Update date display
+            function updateDateDisplay() {
+                const date = new Date(TODAY_DATE);
+                document.getElementById('currentDate').textContent = date.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+
+            // Update time display
+            function updateTimeDisplay() {
+                const now = new Date(TODAY_DATE.getTime() + (Date.now() - TODAY_DATE.getTime()));
+                const hours = now.getHours();
+                const minutes = now.getMinutes().toString().padStart(2, '0');
+                const seconds = now.getSeconds().toString().padStart(2, '0');
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                const hours12 = hours % 12 || 12;
+                const timeString = `${hours12}:${minutes}:${seconds} ${ampm} IST`;
+                document.getElementById('currentTime').textContent = timeString;
+            }
+
+            // Initialize
+            loadHeaderPhoto();
+            updateDateDisplay();
+            updateTimeDisplay();
+            setInterval(updateTimeDisplay, 1000);
+        });
+    </script>
+</body>
+</html>
