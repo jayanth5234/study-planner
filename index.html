@@ -280,6 +280,10 @@
             left: 20px;
         }
 
+        .floating-recycle-bin {
+            left: 80px;
+        }
+
         .search-container {
             position: relative;
             display: flex;
@@ -419,10 +423,16 @@
                 <div class="floating-label-group">
                     <input id="taskSubject" type="text" class="floating-input border-2 border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder=" " aria-required="true">
                     <label for="taskSubject" class="floating-label font-semibold text-gray-800 text-lg text-shadow-sm">Subject</label>
+                    <button id="voiceSubjectButton" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-indigo-500" aria-label="Voice Input for Subject">
+                        <i class="fas fa-microphone"></i>
+                    </button>
                 </div>
                 <div class="floating-label-group">
                     <input id="taskTopic" type="text" class="floating-input border-2 border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder=" " aria-required="true">
                     <label for="taskTopic" class="floating-label font-semibold text-gray-800 text-lg text-shadow-sm">Description</label>
+                    <button id="voiceTopicButton" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-indigo-500" aria-label="Voice Input for Description">
+                        <i class="fas fa-microphone"></i>
+                    </button>
                 </div>
                 <div class="floating-label-group">
                     <input id="taskDetails" type="text" class="floating-input border-2 border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder=" ">
@@ -492,6 +502,19 @@
             </div>
         </div>
 
+        <!-- Recycle Bin Modal -->
+        <div id="recycleBinModal" class="fixed inset-0 bg-black/50 modal-backdrop flex items-center justify-center hidden" role="dialog" aria-labelledby="recycleBinModalTitle">
+            <div class="bg-white/90 rounded-2xl p-6 w-full max-w-lg shadow-2xl border border-indigo-100 modal-content">
+                <h3 id="recycleBinModalTitle" class="font-bold text-2xl text-gray-800 mb-4 font-['Playfair_Display'] text-shadow-sm">Recycle Bin</h3>
+                <div id="recycleBinContent" class="space-y-4 max-h-96 overflow-y-auto">
+                </div>
+                <div class="flex justify-end mt-6">
+                    <button onclick="clearRecycleBin()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300 mr-2" aria-label="Clear Recycle Bin">Clear All</button>
+                    <button onclick="closeRecycleBinModal()" class="px-4 py-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-lg hover:bg-indigo-600 transition duration-300" aria-label="Close Recycle Bin">Close</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Progress Chart Modal -->
         <div id="progressChartModal" class="fixed inset-0 bg-black/50 modal-backdrop flex items-center justify-center hidden" role="dialog" aria-labelledby="progressChartModalTitle">
             <div class="bg-white/90 rounded-2xl p-6 w-full max-w-lg shadow-2xl border border-indigo-100 modal-content">
@@ -521,6 +544,12 @@
     <button onclick="openProgressChartModal()" class="floating-button floating-chart-button" aria-label="View Task Progress Chart">
         <i class="fas fa-chart-bar text-xl text-white"></i>
         <span class="tooltip">View Task Progress</span>
+    </button>
+
+    <!-- Floating Recycle Bin Button -->
+    <button onclick="openRecycleBinModal()" class="floating-button floating-recycle-bin" aria-label="View Recycle Bin">
+        <i class="fas fa-trash-restore text-xl text-white"></i>
+        <span class="tooltip">View Recycle Bin</span>
     </button>
 
     <script>
@@ -582,6 +611,8 @@
             taskDetailsModal: document.getElementById('taskDetailsModal'),
             taskDetailsContent: document.getElementById('taskDetailsContent'),
             deleteConfirmModal: document.getElementById('deleteConfirmModal'),
+            recycleBinModal: document.getElementById('recycleBinModal'),
+            recycleBinContent: document.getElementById('recycleBinContent'),
             progressChartModal: document.getElementById('progressChartModal'),
             progressTimeframe: document.getElementById('progressTimeframe'),
             progressChart: document.getElementById('progressChart'),
@@ -593,7 +624,17 @@
                 Fr: document.getElementById('dayFr'),
                 Sa: document.getElementById('daySa'),
                 Su: document.getElementById('daySu')
-            }
+            },
+            voiceSubjectButton: document.getElementById('voiceSubjectButton'),
+            voiceTopicButton: document.getElementById('voiceTopicButton')
+        };
+
+        // Audio elements for sound effects
+        const sounds = {
+            addTask: new Audio('https://cdn.pixabay.com/download/audio/2022/03/24/audio_8f76233b1a.mp3?filename=click-21156.mp3'),
+            deleteTask: new Audio('https://cdn.pixabay.com/download/audio/2022/05/13/audio_5a3d5c0d3b.mp3?filename=trash-80300.mp3'),
+            completeTask: new Audio('https://cdn.pixabay.com/download/audio/2022/03/24/audio_b4adfa07fd.mp3?filename=success-1-6297.mp3'),
+            restoreTask: new Audio('https://cdn.pixabay.com/download/audio/2022/03/24/audio_4b3b3b3b3b.mp3?filename=pop-39222.mp3')
         };
 
         const utils = {
@@ -675,6 +716,14 @@
                 const end = new Date(start);
                 end.setDate(start.getDate() + 6);
                 return { start, end };
+            },
+            playSound: (sound) => {
+                try {
+                    sound.currentTime = 0;
+                    sound.play().catch(e => console.error('Sound playback error:', e));
+                } catch (e) {
+                    console.error('Error playing sound:', e);
+                }
             }
         };
 
@@ -944,6 +993,7 @@
                 saveData.tasks();
                 updateTasks();
                 toggleAddTaskForm(false);
+                utils.playSound(sounds.addTask);
             } catch (e) {
                 console.error('Error adding task:', e);
                 alert('Failed to add task.');
@@ -994,6 +1044,7 @@
                 saveData.tasks();
                 updateTasks();
                 cancelTaskForm();
+                utils.playSound(sounds.addTask);
             } catch (e) {
                 console.error('Error saving edited task:', e);
                 alert('Failed to save task.');
@@ -1003,7 +1054,10 @@
         function markTaskCompleted(week, day, index, status) {
             try {
                 state.tasks[week][day][index].completed = status;
-                if (status === true && state.tasks[week][day][index].completed !== true) utils.triggerConfetti();
+                if (status === true) {
+                    utils.triggerConfetti();
+                    utils.playSound(sounds.completeTask);
+                }
                 saveData.tasks();
                 updateTasks();
             } catch (e) {
@@ -1022,13 +1076,14 @@
             try {
                 const { week, day, index } = state.pendingDelete;
                 const deletedTask = state.tasks[week][day][index];
-                state.deletedTasks.push({ week, day, index, task: deletedTask });
+                state.deletedTasks.push({ week, day, index, task: deletedTask, timestamp: new Date().toISOString() });
                 state.tasks[week][day].splice(index, 1);
                 saveData.tasks();
                 saveData.deletedTasks();
                 updateTasks();
                 DOM.deleteConfirmModal.classList.add('hidden');
                 state.pendingDelete = null;
+                utils.playSound(sounds.deleteTask);
             } catch (e) {
                 console.error('Error deleting task:', e);
                 alert('Failed to delete task.');
@@ -1038,6 +1093,94 @@
         function cancelDelete() {
             DOM.deleteConfirmModal.classList.add('hidden');
             state.pendingDelete = null;
+        }
+
+        function openRecycleBinModal() {
+            DOM.recycleBinModal.classList.remove('hidden');
+            updateRecycleBinContent();
+            DOM.recycleBinModal.querySelector('button[aria-label="Close Recycle Bin"]').focus();
+        }
+
+        function closeRecycleBinModal() {
+            DOM.recycleBinModal.classList.add('hidden');
+        }
+
+        function updateRecycleBinContent() {
+            try {
+                DOM.recycleBinContent.innerHTML = '';
+                if (state.deletedTasks.length === 0) {
+                    DOM.recycleBinContent.innerHTML = '<p class="text-gray-600">No deleted tasks.</p>';
+                    return;
+                }
+                state.deletedTasks.forEach((item, index) => {
+                    const task = item.task;
+                    const taskDiv = document.createElement('div');
+                    taskDiv.className = 'p-4 bg-gray-100 rounded-lg flex justify-between items-center border border-gray-200';
+                    taskDiv.innerHTML = `
+                        <div>
+                            <p class="font-bold ${task.subjectColor}">${task.subject}</p>
+                            <p class="text-gray-700">${task.topic}</p>
+                            <p class="text-gray-600 text-sm italic">Deleted: ${new Date(item.timestamp).toLocaleString()}</p>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="restoreTask(${index})" class="text-gray-500 hover:bg-gray-200 p-2 rounded-full transition duration-300 relative" aria-label="Restore Task">
+                                <i class="fas fa-undo text-xl"></i>
+                                <span class="tooltip">Restore Task</span>
+                            </button>
+                            <button onclick="deleteTaskPermanently(${index})" class="text-gray-500 hover:bg-gray-200 p-2 rounded-full transition duration-300 relative" aria-label="Permanently Delete Task">
+                                <i class="fas fa-trash-alt text-xl"></i>
+                                <span class="tooltip">Permanently Delete</span>
+                            </button>
+                        </div>
+                    `;
+                    DOM.recycleBinContent.appendChild(taskDiv);
+                });
+            } catch (e) {
+                console.error('Error updating recycle bin:', e);
+                alert('Failed to load recycle bin.');
+            }
+        }
+
+        function restoreTask(index) {
+            try {
+                const { week, day, task } = state.deletedTasks[index];
+                if (!state.tasks[week]) state.tasks[week] = {};
+                if (!state.tasks[week][day]) state.tasks[week][day] = [];
+                state.tasks[week][day].push(task);
+                state.deletedTasks.splice(index, 1);
+                saveData.tasks();
+                saveData.deletedTasks();
+                updateRecycleBinContent();
+                updateTasks();
+                utils.playSound(sounds.restoreTask);
+            } catch (e) {
+                console.error('Error restoring task:', e);
+                alert('Failed to restore task.');
+            }
+        }
+
+        function deleteTaskPermanently(index) {
+            try {
+                state.deletedTasks.splice(index, 1);
+                saveData.deletedTasks();
+                updateRecycleBinContent();
+                utils.playSound(sounds.deleteTask);
+            } catch (e) {
+                console.error('Error permanently deleting task:', e);
+                alert('Failed to permanently delete task.');
+            }
+        }
+
+        function clearRecycleBin() {
+            try {
+                state.deletedTasks = [];
+                saveData.deletedTasks();
+                updateRecycleBinContent();
+                utils.playSound(sounds.deleteTask);
+            } catch (e) {
+                console.error('Error clearing recycle bin:', e);
+                alert('Failed to clear recycle bin.');
+            }
         }
 
         function duplicateTaskToNextDay(week, day, index) {
@@ -1064,6 +1207,7 @@
                 saveData.tasks();
                 updateWeeks();
                 updateTasks();
+                utils.playSound(sounds.addTask);
             } catch (e) {
                 console.error('Error duplicating task:', e);
                 alert('Failed to duplicate task.');
@@ -1254,6 +1398,56 @@
             DOM.taskSearch.focus();
         }
 
+        // Voice input functionality
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            DOM.voiceSubjectButton.addEventListener('click', () => {
+                recognition.start();
+                DOM.voiceSubjectButton.classList.add('text-red-500');
+                recognition.onresult = (event) => {
+                    DOM.taskSubject.value = event.results[0][0].transcript;
+                    DOM.taskSubject.dispatchEvent(new Event('input'));
+                    DOM.voiceSubjectButton.classList.remove('text-red-500');
+                };
+                recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    alert('Voice input failed: ' + event.error);
+                    DOM.voiceSubjectButton.classList.remove('text-red-500');
+                };
+                recognition.onend = () => {
+                    DOM.voiceSubjectButton.classList.remove('text-red-500');
+                };
+            });
+
+            DOM.voiceTopicButton.addEventListener('click', () => {
+                recognition.start();
+                DOM.voiceTopicButton.classList.add('text-red-500');
+                recognition.onresult = (event) => {
+                    DOM.taskTopic.value = event.results[0][0].transcript;
+                    DOM.taskTopic.dispatchEvent(new Event('input'));
+                    DOM.voiceTopicButton.classList.remove('text-red-500');
+                };
+                recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    alert('Voice input failed: ' + event.error);
+                    DOM.voiceTopicButton.classList.remove('text-red-500');
+                };
+                recognition.onend = () => {
+                    DOM.voiceTopicButton.classList.remove('text-red-500');
+                };
+            });
+        } else {
+            DOM.voiceSubjectButton.style.display = 'none';
+            DOM.voiceTopicButton.style.display = 'none';
+            console.warn('Speech recognition not supported in this browser.');
+        }
+
         function updateTasks() {
             try {
                 DOM.taskList.innerHTML = '';
@@ -1363,4 +1557,3 @@
     </script>
 </body>
 </html>
-
