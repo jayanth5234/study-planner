@@ -192,7 +192,7 @@
             position: absolute;
             z-index: 1;
             bottom: 125%;
-            left: 50%;
+            left: 50%; 
             transform: translateX(-50%);
             opacity: 0;
             transition: opacity 0.3s;
@@ -252,10 +252,9 @@
             border-color: #a855f7;
         }
 
-        .floating-chart-button {
+        .floating-button {
             position: fixed;
             bottom: 20px;
-            right: 20px;
             z-index: 1000;
             background: var(--button-gradient);
             border-radius: 50%;
@@ -268,9 +267,17 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .floating-chart-button:hover {
+        .floating-button:hover {
             transform: scale(1.1);
             box-shadow: 0 6px 12px var(--shadow-color);
+        }
+
+        .floating-add-task {
+            right: 20px;
+        }
+
+        .floating-chart-button {
+            left: 20px;
         }
 
         .search-container {
@@ -387,8 +394,8 @@
         </div>
         <!-- Date, Day Count, and Time Section -->
         <div class="mt-4 flex justify-between items-center bg-indigo-600/30 rounded-lg p-4 text-white">
-            <span id="currentDate" class="text-lg font-['Playfair_Display'] drop-shadow-md">Sunday, June 15, 2025</span>
-            <span id="currentDayCount" class="text-lg font-['Playfair_Display'] drop-shadow-md">Day 15/600</span>
+            <span id="currentDate" class="text-lg font-['Playfair_Display'] drop-shadow-md">Monday, June 16, 2025</span>
+            <span id="currentDayCount" class="text-lg font-['Playfair_Display'] drop-shadow-md">Day 16/600</span>
             <span id="currentTime" class="text-lg font-['Playfair_Display'] drop-shadow-md"></span>
         </div>
 
@@ -402,20 +409,6 @@
                 </div>
             </div>
             <div class="flex flex-wrap justify-center gap-3" id="dayButtons">
-            </div>
-        </div>
-
-        <!-- Reset and Add Task Buttons -->
-        <div class="mt-8 flex justify-between items-center">
-            <button onclick="showResetConfirm()" class="px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition duration-300 relative" aria-label="Reset Week">
-                Reset Week
-                <span class="tooltip">Reset all tasks for this week</span>
-            </button>
-            <div class="flex space-x-3">
-                <button id="addTaskButton" onclick="toggleAddTaskForm()" class="px-6 py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition duration-300 pulse relative" aria-label="Add Task">
-                    Add Task
-                    <span class="tooltip">Add a new task with details</span>
-                </button>
             </div>
         </div>
 
@@ -499,18 +492,6 @@
             </div>
         </div>
 
-        <!-- Reset Confirmation Modal -->
-        <div id="resetConfirmModal" class="fixed inset-0 bg-black/50 modal-backdrop flex items-center justify-center hidden" role="dialog" aria-labelledby="resetConfirmModalTitle">
-            <div class="bg-white/90 rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-indigo-100 modal-content">
-                <h3 id="resetConfirmModalTitle" class="font-bold text-2xl text-gray-800 mb-4 font-['Playfair_Display'] text-shadow-sm">Confirm Reset</h3>
-                <p class="text-gray-700 mb-6">Are you sure you want to reset all tasks for this week? This action cannot be undone.</p>
-                <div class="flex justify-end space-x-3">
-                    <button onclick="cancelReset()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition duration-300" aria-label="Cancel Reset">Cancel</button>
-                    <button onclick="confirmReset()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300" aria-label="Confirm Reset">OK</button>
-                </div>
-            </div>
-        </div>
-
         <!-- Progress Chart Modal -->
         <div id="progressChartModal" class="fixed inset-0 bg-black/50 modal-backdrop flex items-center justify-center hidden" role="dialog" aria-labelledby="progressChartModalTitle">
             <div class="bg-white/90 rounded-2xl p-6 w-full max-w-lg shadow-2xl border border-indigo-100 modal-content">
@@ -530,8 +511,14 @@
         </div>
     </div>
 
+    <!-- Floating Add Task Button -->
+    <button id="addTaskButton" onclick="toggleAddTaskForm()" class="floating-button floating-add-task pulse" aria-label="Add Task">
+        <i class="fas fa-plus text-xl text-white"></i>
+        <span class="tooltip">Add a new task</span>
+    </button>
+
     <!-- Floating Chart Button -->
-    <button onclick="openProgressChartModal()" class="floating-chart-button" aria-label="View Task Progress Chart">
+    <button onclick="openProgressChartModal()" class="floating-button floating-chart-button" aria-label="View Task Progress Chart">
         <i class="fas fa-chart-bar text-xl text-white"></i>
         <span class="tooltip">View Task Progress</span>
     </button>
@@ -540,20 +527,19 @@
         const state = {
             startDate: new Date('2025-06-01'),
             currentWeek: 1,
-            currentDay: 'Su',
+            currentDay: 'Mo',
             totalWeekdays: 600,
             baseDays: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
             countedDays: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
-            TODAY_DATE: new Date('2025-06-15T17:50:00+05:30'),
+            TODAY_DATE: new Date(),
             tasks: {},
             deletedTasks: [],
-            pendingDelete: null,
-            pendingReset: null,
             headerPhotoUrl: 'https://via.placeholder.com/80',
             draggedIndex: null,
             isDragging: false,
             chart: null,
             editingTask: null,
+            pendingDelete: null,
             isAddingTask: true
         };
 
@@ -596,7 +582,6 @@
             taskDetailsModal: document.getElementById('taskDetailsModal'),
             taskDetailsContent: document.getElementById('taskDetailsContent'),
             deleteConfirmModal: document.getElementById('deleteConfirmModal'),
-            resetConfirmModal: document.getElementById('resetConfirmModal'),
             progressChartModal: document.getElementById('progressChartModal'),
             progressTimeframe: document.getElementById('progressTimeframe'),
             progressChart: document.getElementById('progressChart'),
@@ -795,7 +780,7 @@
 
         function updateTimeDisplay() {
             setInterval(() => {
-                const now = new Date(state.TODAY_DATE.getTime() + (Date.now() - state.TODAY_DATE.getTime()));
+                const now = new Date();
                 DOM.currentTime.textContent = now.toLocaleTimeString('en-US', { hour12: true, timeZone: 'Asia/Kolkata' }) + ' IST';
             }, 1000);
         }
@@ -1085,39 +1070,6 @@
             }
         }
 
-        function showResetConfirm() {
-            state.pendingReset = state.currentWeek;
-            DOM.resetConfirmModal.classList.remove('hidden');
-            DOM.resetConfirmModal.querySelector('button[aria-label="Cancel Reset"]').focus();
-        }
-
-        function confirmReset() {
-            try {
-                const week = `Week - ${state.pendingReset}`;
-                state.baseDays.forEach(day => {
-                    if (state.tasks[week][day]?.length > 0) {
-                        state.tasks[week][day].forEach((task, index) => {
-                            state.deletedTasks.push({ week, day, index, task });
-                        });
-                        state.tasks[week][day] = [];
-                    }
-                });
-                saveData.tasks();
-                saveData.deletedTasks();
-                updateTasks();
-                DOM.resetConfirmModal.classList.add('hidden');
-                state.pendingReset = null;
-            } catch (e) {
-                console.error('Error resetting tasks:', e);
-                alert('Failed to reset tasks.');
-            }
-        }
-
-        function cancelReset() {
-            DOM.resetConfirmModal.classList.add('hidden');
-            state.pendingReset = null;
-        }
-
         function showTaskDetails(week, day, index) {
             try {
                 const task = state.tasks[week][day][index];
@@ -1180,7 +1132,9 @@
                 } else if (timeframe === 'monthly') {
                     const { start, end } = utils.getMonthRange(state.TODAY_DATE);
                     let current = new Date(start);
-                    while (current <= end) {
+                    const maxMonths = 12;
+                    let monthCount = 0;
+                    while (current <= end && monthCount < maxMonths) {
                         labels.push(current.toLocaleString('en-US', { month: 'short', year: 'numeric' }));
                         let completed = 0, pending = 0, notStarted = 0;
                         Object.keys(state.tasks).forEach(week => {
@@ -1200,6 +1154,7 @@
                         pendingData.push(pending);
                         notStartedData.push(notStarted);
                         current.setMonth(current.getMonth() + 1);
+                        monthCount++;
                     }
                 }
 
@@ -1408,3 +1363,4 @@
     </script>
 </body>
 </html>
+
