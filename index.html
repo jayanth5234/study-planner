@@ -65,19 +65,13 @@
         }
 
         .task-card {
-            transition: all 0.3s ease;
-            animation: slideIn 0.5s ease forwards;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .task-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 20px var(--shadow-color);
             filter: brightness(1.05);
-        }
-
-        @keyframes slideIn {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
         }
 
         .modal-backdrop {
@@ -126,21 +120,6 @@
         [data-theme="dark"] .floating-input:not(:placeholder-shown) + .floating-label {
             background: #1f2937;
             color: #a855f7;
-        }
-
-        .pulse {
-            animation: pulseAnimation 2s infinite;
-        }
-
-        @keyframes pulseAnimation {
-            0% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(79, 70, 229, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
-        }
-
-        .fade-in {
-            opacity: 0;
-            animation: fadeIn 1s ease forwards;
         }
 
         .text-shadow-sm {
@@ -192,7 +171,7 @@
             position: absolute;
             z-index: 1;
             bottom: 125%;
-            left: 50%; 
+            left: 50%;
             transform: translateX(-50%);
             opacity: 0;
             transition: opacity 0.3s;
@@ -207,12 +186,16 @@
             opacity: 1;
         }
 
-        button:focus, input:focus, select:focus {
+        button:focus,
+        input:focus,
+        select:focus {
             outline: 2px solid #4f46e5;
             outline-offset: 2px;
         }
 
-        [data-theme="dark"] button:focus, [data-theme="dark"] input:focus, [data-theme="dark"] select:focus {
+        [data-theme="dark"] button:focus,
+        [data-theme="dark"] input:focus,
+        [data-theme="dark"] select:focus {
             outline-color: #a855f7;
         }
 
@@ -252,38 +235,6 @@
             border-color: #a855f7;
         }
 
-        .floating-button {
-            position: fixed;
-            bottom: 20px;
-            z-index: 1000;
-            background: var(--button-gradient);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 8px var(--shadow-color);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .floating-button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 12px var(--shadow-color);
-        }
-
-        .floating-add-task {
-            right: 20px;
-        }
-
-        .floating-chart-button {
-            left: 20px;
-        }
-
-        .floating-recycle-bin {
-            left: 80px;
-        }
-
         .search-container {
             position: relative;
             display: flex;
@@ -317,15 +268,108 @@
         [data-theme="dark"] .search-clear:hover {
             color: #a855f7;
         }
+
+        .action-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #8B5CF6;
+            position: fixed !important;
+            z-index: 10000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .action-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .action-box i {
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .action-box span {
+            display: none;
+        }
+
+        .action-box.progress {
+            bottom: 20px;
+            left: 20px;
+        }
+
+        .action-box.add-task {
+            bottom: 20px;
+            right: 20px;
+        }
+
+        [data-theme="dark"] .action-box {
+            background: #9333EA;
+        }
+
+        .time-edit-input {
+            width: 100%;
+            border: 2px solid #4f46e5;
+            border-radius: 0.25rem;
+            padding: 0.25rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        [data-theme="dark"] .time-edit-input {
+            border-color: #a855f7;
+            background-color: #1f2937;
+            color: #e5e7eb;
+        }
+
+        .floating-button {
+            position: fixed !important;
+            bottom: 20px !important;
+            z-index: 1000 !important;
+            background: var(--button-gradient);
+            border-radius: 50% !important;
+            width: 50px !important;
+            height: 50px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 0 4px 8px var(--shadow-color) !important;
+            transition: none !important;
+            animation: none !important;
+        }
+
+        .floating-add-task {
+            right: 20px !important;
+            bottom: 20px !important;
+            position: fixed !important;
+        }
+
+        .floating-chart-button {
+            left: 20px !important;
+            bottom: 20px !important;
+            position: fixed !important;
+        }
+
+        .floating-button:hover {
+            transform: none !important;
+            box-shadow: 0 4px 8px var(--shadow-color) !important;
+        }
+
+        .pulse {
+            animation: none !important;
+        }
     </style>
 </head>
 <body class="font-['Poppins'] min-h-screen flex justify-center" data-theme="light">
-    <div class="max-w-5xl w-full mx-4 glassmorphism rounded-3xl p-8 my-8 fade-in">
-        <!-- Header Section -->
+    <div class="max-w-5xl w-full mx-4 glassmorphism rounded-3xl p-8 my-8">
         <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-2xl rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 border border-indigo-200">
-            <div class="flex-shrink-0">
-                <img id="headerPhoto" src="https://via.placeholder.com/80" alt="Header Photo" class="w-20 h-20 rounded-full header-photo shadow-lg">
-            </div>
+            <img id="headerPhoto" src="https://via.placeholder.com/80" alt="Header Photo" class="w-20 h-20 rounded-full header-photo shadow-lg">
             <div class="flex flex-col items-center md:items-start space-y-2">
                 <h1 class="text-2xl md:text-3xl font-['Playfair_Display'] font-bold text-white drop-shadow-md">SSC CGL Study Planner</h1>
             </div>
@@ -333,12 +377,10 @@
                 <span class="text-sm md:text-base font-['Playfair_Display'] font-semibold text-yellow-200 drop-shadow-md">TARGET: ASO</span>
                 <div class="flex items-center space-x-2">
                     <button onclick="toggleTheme()" class="neumorphic rounded-full p-2 text-white relative" aria-label="Toggle Theme">
-                        <i class="fas fa-moon text-xl"></i>
-                        <span class="tooltip">Toggle Dark Mode</span>
+                        <i class="fas fa-lightbulb text-xl"></i><span class="tooltip">Toggle Dark Mode</span>
                     </button>
-                    <button onclick="toggleEditForm()" class="text-sm text-white hover:text-gray-100 underline drop-shadow-md transition duration-300 relative" aria-label="Edit Settings">
-                        Edit
-                        <span class="tooltip">Edit Planner Settings</span>
+                    <button onclick="toggleEditForm()" class="neumorphic rounded-full p-2 text-white relative" aria-label="Open Settings">
+                        <i class="fas fa-cog text-xl"></i><span class="tooltip">Open Settings</span>
                     </button>
                 </div>
                 <div id="editForm" class="hidden mt-2 bg-indigo-600 p-4 rounded-lg shadow-lg">
@@ -358,34 +400,13 @@
                         <div class="space-y-2">
                             <label class="text-white text-sm font-semibold drop-shadow-md">Days to Count in Day n/m</label>
                             <div class="grid grid-cols-4 gap-2">
-                                <label class="flex items-center space-x-2 text-white text-sm">
-                                    <input type="checkbox" id="dayMo" value="Mo" class="custom-checkbox" checked aria-label="Count Monday">
-                                    <span>Mo</span>
-                                </label>
-                                <label class="flex items-center space-x-2 text-white text-sm">
-                                    <input type="checkbox" id="dayTu" value="Tu" class="custom-checkbox" checked aria-label="Count Tuesday">
-                                    <span>Tu</span>
-                                </label>
-                                <label class="flex items-center space-x-2 text-white text-sm">
-                                    <input type="checkbox" id="dayWe" value="We" class="custom-checkbox" checked aria-label="Count Wednesday">
-                                    <span>We</span>
-                                </label>
-                                <label class="flex items-center space-x-2 text-white text-sm">
-                                    <input type="checkbox" id="dayTh" value="Th" class="custom-checkbox" checked aria-label="Count Thursday">
-                                    <span>Th</span>
-                                </label>
-                                <label class="flex items-center space-x-2 text-white text-sm">
-                                    <input type="checkbox" id="dayFr" value="Fr" class="custom-checkbox" checked aria-label="Count Friday">
-                                    <span>Fr</span>
-                                </label>
-                                <label class="flex items-center space-x-2 text-white text-sm">
-                                    <input type="checkbox" id="daySa" value="Sa" class="custom-checkbox" checked aria-label="Count Saturday">
-                                    <span>Sa</span>
-                                </label>
-                                <label class="flex items-center space-x-2 text-white text-sm">
-                                    <input type="checkbox" id="daySu" value="Su" class="custom-checkbox" aria-label="Count Sunday">
-                                    <span>Su</span>
-                                </label>
+                                <label class="flex items-center space-x-2 text-white text-sm"><input type="checkbox" value="Mo" class="custom-checkbox day-checkbox" checked aria-label="Count Monday"><span>Mo</span></label>
+                                <label class="flex items-center space-x-2 text-white text-sm"><input type="checkbox" value="Tu" class="custom-checkbox day-checkbox" checked aria-label="Count Tuesday"><span>Tu</span></label>
+                                <label class="flex items-center space-x-2 text-white text-sm"><input type="checkbox" value="We" class="custom-checkbox day-checkbox" checked aria-label="Count Wednesday"><span>We</span></label>
+                                <label class="flex items-center space-x-2 text-white text-sm"><input type="checkbox" value="Th" class="custom-checkbox day-checkbox" checked aria-label="Count Thursday"><span>Th</span></label>
+                                <label class="flex items-center space-x-2 text-white text-sm"><input type="checkbox" value="Fr" class="custom-checkbox day-checkbox" checked aria-label="Count Friday"><span>Fr</span></label>
+                                <label class="flex items-center space-x-2 text-white text-sm"><input type="checkbox" value="Sa" class="custom-checkbox day-checkbox" checked aria-label="Count Saturday"><span>Sa</span></label>
+                                <label class="flex items-center space-x-2 text-white text-sm"><input type="checkbox" value="Su" class="custom-checkbox day-checkbox" aria-label="Count Sunday"><span>Su</span></label>
                             </div>
                         </div>
                         <div class="flex justify-end space-x-2">
@@ -396,43 +417,32 @@
                 </div>
             </div>
         </div>
-        <!-- Date, Day Count, and Time Section -->
-        <div class="mt-4 flex justify-between items-center bg-indigo-600/30 rounded-lg p-4 text-white">
-            <span id="currentDate" class="text-lg font-['Playfair_Display'] drop-shadow-md">Monday, June 16, 2025</span>
-            <span id="currentDayCount" class="text-lg font-['Playfair_Display'] drop-shadow-md">Day 16/600</span>
-            <span id="currentTime" class="text-lg font-['Playfair_Display'] drop-shadow-md"></span>
+        <div class="mt-4 flex justify-between items-center bg-indigo-600/30 rounded-lg p-4">
+            <span id="currentDate" class="text-lg font-['Playfair_Display'] text-black">Thursday, June 19, 2025</span>
+            <span id="currentDayCount" class="text-lg font-['Playfair_Display'] text-black">Day 18/600</span>
+            <span id="currentTime" class="text-lg font-['Playfair_Display'] text-black">08:40 AM IST</span>
         </div>
-
-        <!-- Week and Day Navigation -->
-        <div class="bg-white/90 shadow-2xl rounded-2xl p-6 mt-8 flex flex-col space-y-6 border border-gray-100">
+        <div class="bg-white/90 shadow-2xl rounded-2xl p-6 mt-8 flex flex-col space-y-8 border border-gray-100">
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-3">
                     <span class="font-semibold text-gray-800 text-xl font-['Playfair_Display'] text-shadow-sm">Week:</span>
-                    <select id="weekSelect" onchange="updateWeek()" class="border-2 border-indigo-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white/50" aria-label="Select Week">
-                    </select>
+                    <select id="weekSelect" onchange="updateWeek()" class="border-2 border-indigo-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white/50" aria-label="Select Week"></select>
                 </div>
             </div>
-            <div class="flex flex-wrap justify-center gap-3" id="dayButtons">
-            </div>
+            <div class="flex flex-wrap justify-center gap-3" id="dayButtons"></div>
         </div>
-
-        <!-- Add/Edit Task Form -->
         <div id="addTaskForm" class="bg-white/90 shadow-2xl rounded-2xl p-6 mt-8 hidden border border-gray-100">
             <h3 id="taskFormTitle" class="font-bold text-2xl text-gray-800 mb-6 font-['Playfair_Display'] text-shadow-sm">Add New Task</h3>
             <div class="space-y-6">
                 <div class="floating-label-group">
                     <input id="taskSubject" type="text" class="floating-input border-2 border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder=" " aria-required="true">
                     <label for="taskSubject" class="floating-label font-semibold text-gray-800 text-lg text-shadow-sm">Subject</label>
-                    <button id="voiceSubjectButton" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-indigo-500" aria-label="Voice Input for Subject">
-                        <i class="fas fa-microphone"></i>
-                    </button>
+                    <button id="voiceSubjectButton" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-indigo-500" aria-label="Voice Input for Subject"><i class="fas fa-microphone-alt"></i></button>
                 </div>
                 <div class="floating-label-group">
                     <input id="taskTopic" type="text" class="floating-input border-2 border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder=" " aria-required="true">
                     <label for="taskTopic" class="floating-label font-semibold text-gray-800 text-lg text-shadow-sm">Description</label>
-                    <button id="voiceTopicButton" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-indigo-500" aria-label="Voice Input for Description">
-                        <i class="fas fa-microphone"></i>
-                    </button>
+                    <button id="voiceTopicButton" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-indigo-500" aria-label="Voice Input for Description"><i class="fas fa-microphone-alt"></i></button>
                 </div>
                 <div class="floating-label-group">
                     <input id="taskDetails" type="text" class="floating-input border-2 border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder=" ">
@@ -444,53 +454,67 @@
                 </div>
             </div>
         </div>
-
-        <!-- Search Section, Statistics, and Progress Bar -->
         <div class="bg-white/90 shadow-2xl rounded-2xl p-6 mt-8 flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0 border border-gray-100 stats-section">
-            <div class="flex flex-col md:flex-row items-center space-y-3 md:space-y-0 md:space-x-3 w-full md:w-auto">
-                <div class="flex items-center space-x-3 w-full md:w-auto">
+            <div class="flex items-center space-x-3 w-full md:w-auto order-1">
+                <div class="flex items-center space-x-3">
                     <span class="font-bold text-xl text-gray-800 font-['Playfair_Display'] text-shadow-sm">Search Tasks:</span>
                     <div class="search-container w-full md:w-64">
-                        <input id="taskSearch" type="text" oninput="handleSearchInput()" class="border-2 border-gray-200 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white/50 pr-8" placeholder="Search by subject or description" aria-label="Search Tasks">
-                        <button id="searchClear" class="search-clear" onclick="clearSearch()" aria-label="Clear Search">
-                            <i class="fas fa-times"></i>
-                        </button>
+                        <input id="taskSearch" type="text" oninput="debouncedSearch()" class="border-2 border-gray-200 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white/50 pr-8" placeholder="Search by subject or description" aria-label="Search Tasks">
+                        <button id="searchClear" class="search-clear" onclick="clearSearch()" aria-label="Clear Search"><i class="fas fa-times-circle"></i></button>
                     </div>
                 </div>
             </div>
-            <div class="flex items-center space-x-2">
-                <span class="font-bold text-xl text-gray-800 font-['Playfair_Display'] text-shadow-sm">Task:</span>
-                <span id="taskCount" class="text-xl text-gray-800">0/0</span>
+            <div class="flex items-center justify-center w-full md:w-auto order-2">
+                <span id="taskCount" class="text-lg font-['Playfair_Display'] text-gray-800">Task: 0/0</span>
             </div>
-            <div class="text-gray-800 text-sm space-y-2">
-                <div class="space-x-2">
-                    <span id="statsTotal">Total: 0</span> | 
-                    <span id="statsCompleted">Completed: 0</span> | 
-                    <span id="statsPercentage">Completion: 0%</span>
+            <div class="w-full md:w-auto order-3">
+                <div class="text-lg font-['Playfair_Display'] text-gray-800">
+                    Total: <span id="totalTasks">0</span> | Completed: <span id="completedTasks">0</span> | Completion: <span id="completionPercentage">0%</span>
                 </div>
                 <div class="progress-bar">
-                    <div id="progressBarFill" class="progress-bar-fill" style="width: 0%"></div>
+                    <div id="progressBarFill" class="progress-bar-fill" style="width: 0%;"></div>
                 </div>
             </div>
         </div>
-
-        <!-- Task List -->
-        <div id="taskList" class="mt-8 space-y-6 mb-8">
+        <div id="taskList" class="mt-8 space-y-6 mb-8"></div>
+        <div id="dailySummary" class="bg-white/90 shadow-2xl rounded-2xl p-6 mt-8 flex flex-col space-y-4 border border-gray-100">
+            <h3 class="font-bold text-2xl text-gray-800 font-['Playfair_Display'] text-shadow-sm">Daily Summary</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <p class="text-gray-800 text-lg font-semibold">Total Time Spent</p>
+                    <p class="text-2xl font-bold cursor-pointer" id="dailyTimeTotal" ondblclick="editDailyTime()">0h 0m 0s</p>
+                    <input id="dailyTimeInput" type="text" class="time-edit-input hidden" onblur="saveDailyTime()" onkeypress="if(event.key === 'Enter') saveDailyTime()" placeholder="e.g., 2h 30m">
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <p class="text-gray-800 text-lg font-semibold">Completed Tasks</p>
+                    <p class="text-2xl font-bold text-green-600" id="completedTasksCount">0</p>
+                </div>
+                <div class="bg-red-50 p-4 rounded-lg">
+                    <p class="text-gray-800 text-lg font-semibold">Pending Tasks</p>
+                    <p class="text-2xl font-bold text-red-600" id="pendingTasksCount">0</p>
+                </div>
+                <div class="bg-yellow-50 p-4 rounded-lg">
+                    <p class="text-gray-800 text-lg font-semibold">Total Tasks</p>
+                    <p class="text-2xl font-bold text-yellow-600" id="totalTasksCount">0</p>
+                </div>
+            </div>
         </div>
-
-        <!-- Task Details Modal -->
+        <div id="recycleBin" class="bg-white/90 shadow-2xl rounded-2xl p-6 mt-4 flex flex-col space-y-4 border border-gray-100">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-2xl text-gray-800 font-['Playfair_Display'] text-shadow-sm">Recycle Bin</h3>
+                <button onclick="clearAllDeletedTasks()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300 disabled:opacity-50" id="clearAllButton" disabled aria-label="Clear All Deleted Tasks">Clear All</button>
+            </div>
+            <div id="deletedTasksList" class="space-y-4"></div>
+        </div>
         <div id="taskDetailsModal" class="fixed inset-0 bg-black/50 modal-backdrop flex items-center justify-center hidden" role="dialog" aria-labelledby="taskDetailsModalTitle">
             <div class="bg-white/90 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-indigo-100 modal-content">
                 <h3 id="taskDetailsModalTitle" class="font-bold text-2xl text-gray-800 mb-4 font-['Playfair_Display'] text-shadow-sm">Task Details</h3>
-                <div id="taskDetailsContent" class="space-y-4">
-                </div>
+                <div id="taskDetailsContent" class="space-y-4"></div>
                 <div class="flex justify-end mt-6">
-                    <button onclick="closeTaskDetailsModal()" class="px-4 py-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-lg hover:bg-indigo-600 transition duration-300" aria-label="Close Task Details">Close</button>
+                    <button onclick="closeTaskDetailsModal()" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-pink-500 text-white rounded-lg hover:bg-indigo-600 transition duration-300" aria-label="Close Task Details">Close</button>
                 </div>
             </div>
         </div>
-
-        <!-- Delete Confirmation Modal -->
         <div id="deleteConfirmModal" class="fixed inset-0 bg-black/50 modal-backdrop flex items-center justify-center hidden" role="dialog" aria-labelledby="deleteConfirmModalTitle">
             <div class="bg-white/90 rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-indigo-100 modal-content">
                 <h3 id="deleteConfirmModalTitle" class="font-bold text-2xl text-gray-800 mb-4 font-['Playfair_Display'] text-shadow-sm">Confirm Deletion</h3>
@@ -501,21 +525,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Recycle Bin Modal -->
-        <div id="recycleBinModal" class="fixed inset-0 bg-black/50 modal-backdrop flex items-center justify-center hidden" role="dialog" aria-labelledby="recycleBinModalTitle">
-            <div class="bg-white/90 rounded-2xl p-6 w-full max-w-lg shadow-2xl border border-indigo-100 modal-content">
-                <h3 id="recycleBinModalTitle" class="font-bold text-2xl text-gray-800 mb-4 font-['Playfair_Display'] text-shadow-sm">Recycle Bin</h3>
-                <div id="recycleBinContent" class="space-y-4 max-h-96 overflow-y-auto">
-                </div>
-                <div class="flex justify-end mt-6">
-                    <button onclick="clearRecycleBin()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300 mr-2" aria-label="Clear Recycle Bin">Clear All</button>
-                    <button onclick="closeRecycleBinModal()" class="px-4 py-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-lg hover:bg-indigo-600 transition duration-300" aria-label="Close Recycle Bin">Close</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Progress Chart Modal -->
         <div id="progressChartModal" class="fixed inset-0 bg-black/50 modal-backdrop flex items-center justify-center hidden" role="dialog" aria-labelledby="progressChartModalTitle">
             <div class="bg-white/90 rounded-2xl p-6 w-full max-w-lg shadow-2xl border border-indigo-100 modal-content">
                 <h3 id="progressChartModalTitle" class="font-bold text-2xl text-gray-800 mb-4 font-['Playfair_Display'] text-shadow-sm">Task Progress</h3>
@@ -528,1032 +537,925 @@
                 </div>
                 <canvas id="progressChart" height="200"></canvas>
                 <div class="flex justify-end mt-6">
-                    <button onclick="closeProgressChartModal()" class="px-4 py-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-lg hover:bg-indigo-600 transition duration-300" aria-label="Close Progress Chart">Close</button>
+                    <button onclick="closeProgressChartModal()" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-pink-500 text-white rounded-lg hover:bg-indigo-600 transition duration-300" aria-label="Close Progress Chart">Close</button>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Floating Add Task Button -->
-    <button id="addTaskButton" onclick="toggleAddTaskForm()" class="floating-button floating-add-task pulse" aria-label="Add Task">
+    <div id="toast" class="fixed top-4 right-4 hidden bg-gray-600 text-white p-4 rounded-lg shadow-lg">
+        <span id="toastMessage"></span><button onclick="hideToast()" class="ml-2 text-white">×</button>
+    </div>
+    <button id="addTaskButton" onclick="toggleAddTaskForm()" class="floating-button floating-add-task" aria-label="Add Task">
         <i class="fas fa-plus text-xl text-white"></i>
         <span class="tooltip">Add a new task</span>
     </button>
-
-    <!-- Floating Chart Button -->
     <button onclick="openProgressChartModal()" class="floating-button floating-chart-button" aria-label="View Task Progress Chart">
         <i class="fas fa-chart-bar text-xl text-white"></i>
         <span class="tooltip">View Task Progress</span>
     </button>
-
-    <!-- Floating Recycle Bin Button -->
-    <button onclick="openRecycleBinModal()" class="floating-button floating-recycle-bin" aria-label="View Recycle Bin">
-        <i class="fas fa-trash-restore text-xl text-white"></i>
-        <span class="tooltip">View Recycle Bin</span>
-    </button>
-
-    <script>
-        const state = {
-            startDate: new Date('2025-06-01'),
-            currentWeek: 1,
-            currentDay: 'Mo',
-            totalWeekdays: 600,
-            baseDays: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
-            countedDays: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
-            TODAY_DATE: new Date(),
-            tasks: {},
-            deletedTasks: [],
-            headerPhotoUrl: 'https://via.placeholder.com/80',
-            draggedIndex: null,
-            isDragging: false,
-            chart: null,
-            editingTask: null,
-            pendingDelete: null,
-            isAddingTask: true
-        };
-
-        const dayColors = {
-            'Mo': { bg: 'bg-red-300', hover: 'hover:bg-red-400' },
-            'Tu': { bg: 'bg-orange-300', hover: 'hover:bg-orange-400' },
-            'We': { bg: 'bg-yellow-300', hover: 'hover:bg-yellow-400' },
-            'Th': { bg: 'bg-green-300', hover: 'hover:bg-green-400' },
-            'Fr': { bg: 'bg-blue-300', hover: 'hover:bg-blue-400' },
-            'Sa': { bg: 'bg-indigo-300', hover: 'hover:bg-indigo-400' },
-            'Su': { bg: 'bg-purple-300', hover: 'hover:bg-purple-400' }
-        };
-
-        const DOM = {
-            headerPhoto: document.getElementById('headerPhoto'),
-            editForm: document.getElementById('editForm'),
-            totalDaysInput: document.getElementById('totalDaysInput'),
-            startDateInput: document.getElementById('startDateInput'),
-            headerPhotoInput: document.getElementById('headerPhotoInput'),
-            currentDate: document.getElementById('currentDate'),
-            currentDayCount: document.getElementById('currentDayCount'),
-            currentTime: document.getElementById('currentTime'),
-            weekSelect: document.getElementById('weekSelect'),
-            dayButtons: document.getElementById('dayButtons'),
-            addTaskButton: document.getElementById('addTaskButton'),
-            addTaskForm: document.getElementById('addTaskForm'),
-            taskFormTitle: document.getElementById('taskFormTitle'),
-            taskSubject: document.getElementById('taskSubject'),
-            taskTopic: document.getElementById('taskTopic'),
-            taskDetails: document.getElementById('taskDetails'),
-            taskFormSubmit: document.getElementById('taskFormSubmit'),
-            taskSearch: document.getElementById('taskSearch'),
-            searchClear: document.getElementById('searchClear'),
-            taskCount: document.getElementById('taskCount'),
-            statsTotal: document.getElementById('statsTotal'),
-            statsCompleted: document.getElementById('statsCompleted'),
-            statsPercentage: document.getElementById('statsPercentage'),
-            progressBarFill: document.getElementById('progressBarFill'),
-            taskList: document.getElementById('taskList'),
-            taskDetailsModal: document.getElementById('taskDetailsModal'),
-            taskDetailsContent: document.getElementById('taskDetailsContent'),
-            deleteConfirmModal: document.getElementById('deleteConfirmModal'),
-            recycleBinModal: document.getElementById('recycleBinModal'),
-            recycleBinContent: document.getElementById('recycleBinContent'),
-            progressChartModal: document.getElementById('progressChartModal'),
-            progressTimeframe: document.getElementById('progressTimeframe'),
-            progressChart: document.getElementById('progressChart'),
-            dayCheckboxes: {
-                Mo: document.getElementById('dayMo'),
-                Tu: document.getElementById('dayTu'),
-                We: document.getElementById('dayWe'),
-                Th: document.getElementById('dayTh'),
-                Fr: document.getElementById('dayFr'),
-                Sa: document.getElementById('daySa'),
-                Su: document.getElementById('daySu')
-            },
-            voiceSubjectButton: document.getElementById('voiceSubjectButton'),
-            voiceTopicButton: document.getElementById('voiceTopicButton')
-        };
-
-        // Audio elements for sound effects
-        const sounds = {
-            addTask: new Audio('https://cdn.pixabay.com/download/audio/2022/03/24/audio_8f76233b1a.mp3?filename=click-21156.mp3'),
-            deleteTask: new Audio('https://cdn.pixabay.com/download/audio/2022/05/13/audio_5a3d5c0d3b.mp3?filename=trash-80300.mp3'),
-            completeTask: new Audio('https://cdn.pixabay.com/download/audio/2022/03/24/audio_b4adfa07fd.mp3?filename=success-1-6297.mp3'),
-            restoreTask: new Audio('https://cdn.pixabay.com/download/audio/2022/03/24/audio_4b3b3b3b3b.mp3?filename=pop-39222.mp3')
-        };
-
-        const utils = {
-            testLocalStorage: () => {
-                try {
-                    localStorage.setItem('test', 'test');
-                    localStorage.removeItem('test');
-                    return true;
-                } catch (e) {
-                    console.error('localStorage test failed:', e);
-                    alert('localStorage is not available. This may prevent saving tasks.');
-                    return false;
-                }
-            },
-            saveToLocalStorage: (key, value) => {
-                try {
-                    localStorage.setItem(key, JSON.stringify(value));
-                } catch (e) {
-                    console.error(`Error saving ${key}:`, e);
-                    alert(`Failed to save ${key}. Changes may not persist.`);
-                }
-            },
-            loadFromLocalStorage: (key) => {
-                try {
-                    const value = localStorage.getItem(key);
-                    return value ? JSON.parse(value) : null;
-                } catch (e) {
-                    console.error(`Error loading ${key}:`, e);
-                    return null;
-                }
-            },
-            getDayOfWeek: (date) => ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'][date.getDay()],
-            countWeekdaysBetween: (start, end) => {
-                let count = 0;
-                let current = new Date(start);
-                current.setHours(0, 0, 0, 0);
-                end.setHours(0, 0, 0, 0);
-                while (current <= end) {
-                    if (state.countedDays.includes(utils.getDayOfWeek(current))) count++;
-                    current.setDate(current.getDate() + 1);
-                }
-                return count;
-            },
-            calculateDate: (week, day) => {
-                const daysSinceStart = (week - 1) * 7 + state.baseDays.indexOf(day);
-                const date = new Date(state.startDate);
-                date.setHours(0, 0, 0, 0);
-                date.setDate(date.getDate() + daysSinceStart);
-                return date;
-            },
-            getFirstUrlFromText: (text) => {
-                const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)|((?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?:\/[^\s]*)?)/;
-                const match = text.match(urlRegex);
-                if (match) {
-                    let url = match[0];
-                    if (!url.startsWith('http://') && !url.startsWith('https://')) url = 'https://' + url;
-                    return url;
-                }
-                return null;
-            },
-            triggerConfetti: () => {
-                try {
-                    confetti({
-                        particleCount: 100,
-                        spread: 70,
-                        origin: { y: 0.6 }
-                    });
-                } catch (e) {
-                    console.error('Confetti error:', e);
-                }
-            },
-            getMonthRange: (date) => {
-                const start = new Date(date.getFullYear(), date.getMonth(), 1);
-                const end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-                return { start, end };
-            },
-            getWeekRange: (weekNum) => {
-                const start = utils.calculateDate(weekNum, state.baseDays[0]);
-                const end = new Date(start);
-                end.setDate(start.getDate() + 6);
-                return { start, end };
-            },
-            playSound: (sound) => {
-                try {
-                    sound.currentTime = 0;
-                    sound.play().catch(e => console.error('Sound playback error:', e));
-                } catch (e) {
-                    console.error('Error playing sound:', e);
-                }
-            }
-        };
-
-        const loadData = {
-            headerPhoto: () => {
-                const saved = utils.loadFromLocalStorage('plannerHeaderPhoto');
-                if (saved) {
-                    state.headerPhotoUrl = saved;
-                    DOM.headerPhoto.src = saved;
-                    DOM.headerPhotoInput.value = saved;
-                }
-            },
-            startDate: () => {
-                const saved = utils.loadFromLocalStorage('plannerStartDate');
-                if (saved) {
-                    state.startDate = new Date(saved);
-                    state.startDate.setHours(0, 0, 0, 0);
-                    DOM.startDateInput.value = state.startDate.toISOString().split('T')[0];
-                }
-            },
-            totalWeekdays: () => {
-                const saved = utils.loadFromLocalStorage('plannerTotalWeekdays');
-                if (saved && !isNaN(saved) && saved >= 1) {
-                    state.totalWeekdays = parseInt(saved);
-                    DOM.totalDaysInput.value = saved;
-                }
-            },
-            countedDays: () => {
-                const saved = utils.loadFromLocalStorage('plannerCountedDays');
-                if (saved && Array.isArray(saved) && saved.length > 0) {
-                    state.countedDays = saved;
-                    Object.keys(DOM.dayCheckboxes).forEach(day => {
-                        DOM.dayCheckboxes[day].checked = saved.includes(day);
-                    });
-                }
-            },
-            tasks: () => {
-                const saved = utils.loadFromLocalStorage('plannerTasks');
-                if (saved) {
-                    state.tasks = saved;
-                    Object.keys(state.tasks).forEach(week => {
-                        state.baseDays.forEach(day => {
-                            if (!state.tasks[week][day]) state.tasks[week][day] = [];
-                            state.tasks[week][day] = state.tasks[week][day].map(task => ({
-                                subject: task.subject || 'Unknown',
-                                topic: task.topic || '',
-                                details: task.details || 'No details provided',
-                                subjectColor: task.subjectColor || 'text-gray-800',
-                                completed: task.completed === undefined ? null : task.completed
-                            }));
-                        });
-                    });
-                    if (state.tasks['Week - 0']) delete state.tasks['Week - 0'];
-                } else {
-                    initializeTasks();
-                }
-            },
-            deletedTasks: () => {
-                const saved = utils.loadFromLocalStorage('plannerDeletedTasks');
-                if (saved) state.deletedTasks = saved;
-            }
-        };
-
-        const saveData = {
-            tasks: () => utils.saveToLocalStorage('plannerTasks', state.tasks),
-            headerPhoto: () => utils.saveToLocalStorage('plannerHeaderPhoto', state.headerPhotoUrl),
-            startDate: () => utils.saveToLocalStorage('plannerStartDate', state.startDate.toISOString()),
-            totalWeekdays: () => utils.saveToLocalStorage('plannerTotalWeekdays', state.totalWeekdays),
-            countedDays: () => utils.saveToLocalStorage('plannerCountedDays', state.countedDays),
-            deletedTasks: () => utils.saveToLocalStorage('plannerDeletedTasks', state.deletedTasks)
-        };
-
-        function initializeTasks() {
-            state.tasks = {};
-            const totalWeeks = Math.ceil(state.totalWeekdays / state.countedDays.length);
-            for (let i = 1; i <= totalWeeks; i++) {
-                state.tasks[`Week - ${i}`] = {};
-                state.baseDays.forEach(day => {
-                    state.tasks[`Week - ${i}`][day] = [];
-                });
-            }
-            saveData.tasks();
-        }
-
-        function calculateCurrentWeekAndDay() {
-            const totalDaysSinceStart = Math.floor((state.TODAY_DATE - state.startDate) / (1000 * 60 * 60 * 24));
-            if (totalDaysSinceStart < 0) {
-                state.currentWeek = 1;
-                state.currentDay = state.baseDays[0];
-                return;
-            }
-            state.currentWeek = Math.floor(totalDaysSinceStart / 7) + 1;
-            state.currentDay = utils.getDayOfWeek(state.TODAY_DATE);
-        }
-
-        function updateDateDisplay() {
-            const date = utils.calculateDate(state.currentWeek, state.currentDay);
-            DOM.currentDate.textContent = date.toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            let currentDayNumber = utils.countWeekdaysBetween(state.startDate, date);
-            if (date < state.startDate) currentDayNumber = 0;
-            DOM.currentDayCount.textContent = `Day ${currentDayNumber}/${state.totalWeekdays}`;
-        }
-
-        function updateTimeDisplay() {
-            setInterval(() => {
-                const now = new Date();
-                DOM.currentTime.textContent = now.toLocaleTimeString('en-US', { hour12: true, timeZone: 'Asia/Kolkata' }) + ' IST';
-            }, 1000);
-        }
-
-        function updateWeek() {
-            state.currentWeek = parseInt(DOM.weekSelect.value);
-            updateDays();
-            updateTasks();
-            updateDateDisplay();
-        }
-
-        function updateWeeks() {
-            const totalWeeks = Math.ceil(state.totalWeekdays / state.countedDays.length);
-            DOM.weekSelect.innerHTML = '';
-            for (let i = 1; i <= totalWeeks; i++) {
-                const option = document.createElement('option');
-                option.value = i;
-                option.textContent = `Week ${i}`;
-                if (i === state.currentWeek) option.selected = true;
-                DOM.weekSelect.appendChild(option);
-                if (!state.tasks[`Week - ${i}`]) {
-                    state.tasks[`Week - ${i}`] = {};
-                    state.baseDays.forEach(day => state.tasks[`Week - ${i}`][day] = []);
-                }
-            }
-            Object.keys(state.tasks).forEach(week => {
-                const weekNum = parseInt(week.replace('Week - ', ''));
-                if (weekNum > totalWeeks || isNaN(weekNum)) delete state.tasks[week];
-            });
-            saveData.tasks();
-            updateDays();
-            updateTasks();
-            updateDateDisplay();
-        }
-
-        function updateDays() {
-            DOM.dayButtons.innerHTML = '';
-            state.baseDays.forEach(day => {
-                const button = document.createElement('button');
-                button.textContent = day;
-                button.onclick = () => selectDay(day);
-                const colors = dayColors[day];
-                button.className = `px-4 py-2 ${day === state.currentDay ? 'bg-indigo-600 text-white shadow-inner' : `${colors.bg} ${colors.hover} text-white`} rounded-md transition-all`;
-                button.setAttribute('aria-label', `Select ${day}`);
-                DOM.dayButtons.appendChild(button);
-            });
-        }
-
-        function selectDay(day) {
-            state.currentDay = day;
-            Array.from(DOM.dayButtons.children).forEach(button => {
-                const dayLabel = button.textContent;
-                const colors = dayColors[dayLabel];
-                button.className = `px-4 py-2 ${dayLabel === day ? 'bg-indigo-600 text-white shadow-inner' : `${colors.bg} ${colors.hover} text-white`} rounded-md transition-all`;
-            });
-            updateTasks();
-            updateDateDisplay();
-        }
-
-        function toggleTheme() {
-            const isDark = document.body.getAttribute('data-theme') === 'dark';
-            document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-            const themeButton = document.querySelector('button[aria-label="Toggle Theme"] i');
-            themeButton.className = `fas fa-${isDark ? 'moon' : 'sun'} text-xl`;
-            themeButton.nextElementSibling.textContent = `Toggle ${isDark ? 'Dark' : 'Light'} Mode`;
-            if (state.chart) updateProgressChart();
-        }
-
-        function toggleEditForm() {
-            DOM.editForm.classList.toggle('hidden');
-            if (!DOM.editForm.classList.contains('hidden')) DOM.totalDaysInput.focus();
-        }
-
-        function toggleAddTaskForm(isAdd = true) {
-            state.isAddingTask = isAdd;
-            DOM.taskFormTitle.textContent = isAdd ? 'Add New Task' : 'Edit Task';
-            DOM.taskFormSubmit.setAttribute('aria-label', isAdd ? 'Submit Task' : 'Save Task');
-            DOM.addTaskForm.classList.toggle('hidden');
-            if (!DOM.addTaskForm.classList.contains('hidden')) DOM.taskSubject.focus();
-            if (isAdd) {
-                DOM.taskSubject.value = '';
-                DOM.taskTopic.value = '';
-                DOM.taskDetails.value = '';
-                state.editingTask = null;
-            }
-        }
-
-        function cancelTaskForm() {
-            toggleAddTaskForm(false);
-            state.editingTask = null;
-            DOM.taskSubject.value = '';
-            DOM.taskTopic.value = '';
-            DOM.taskDetails.value = '';
-        }
-
-        function submitTaskForm() {
-            if (state.isAddingTask) addTask();
-            else saveEditedTask();
-        }
-
-        function saveSettings() {
-            try {
-                const newStartDate = new Date(DOM.startDateInput.value);
-                if (isNaN(newStartDate.getTime())) {
-                    alert('Invalid start date.');
-                    return;
-                }
-                newStartDate.setHours(0, 0, 0, 0);
-                state.startDate = newStartDate;
-                saveData.startDate();
-
-                const newTotalWeekdays = parseInt(DOM.totalDaysInput.value);
-                if (isNaN(newTotalWeekdays) || newTotalWeekdays < 1) {
-                    alert('Total days must be at least 1.');
-                    return;
-                }
-                state.totalWeekdays = newTotalWeekdays;
-                saveData.totalWeekdays();
-
-                const newCountedDays = Object.keys(DOM.dayCheckboxes).filter(day => DOM.dayCheckboxes[day].checked);
-                if (newCountedDays.length === 0) {
-                    alert('Select at least one day to count.');
-                    return;
-                }
-                state.countedDays = newCountedDays;
-                saveData.countedDays();
-
-                const newHeaderPhotoUrl = DOM.headerPhotoInput.value.trim();
-                if (newHeaderPhotoUrl) {
-                    state.headerPhotoUrl = newHeaderPhotoUrl;
-                    DOM.headerPhoto.src = newHeaderPhotoUrl;
-                    saveData.headerPhoto();
-                }
-
-                toggleEditForm();
-                updateWeeks();
-                calculateCurrentWeekAndDay();
-                updateDateDisplay();
-                updateTasks();
-            } catch (e) {
-                console.error('Error saving settings:', e);
-                alert('Failed to save settings.');
-            }
-        }
-
-        function addTask() {
-            try {
-                const subject = DOM.taskSubject.value.trim();
-                const topic = DOM.taskTopic.value.trim();
-                const details = DOM.taskDetails.value.trim() || 'No details provided';
-                if (!subject || !topic) {
-                    alert('Subject and description are required.');
-                    DOM.taskSubject.focus();
-                    return;
-                }
-                const subjectColor = subject.toUpperCase() === 'MATHS' || subject.toUpperCase() === 'ENGLISH' ? 'text-blue-600' : 'text-gray-800';
-                const week = `Week - ${state.currentWeek}`;
-                if (!state.tasks[week]) state.tasks[week] = {};
-                if (!state.tasks[week][state.currentDay]) state.tasks[week][state.currentDay] = [];
-                state.tasks[week][state.currentDay].push({ subject: subject.toUpperCase(), topic, details, subjectColor, completed: null });
-                saveData.tasks();
-                updateTasks();
-                toggleAddTaskForm(false);
-                utils.playSound(sounds.addTask);
-            } catch (e) {
-                console.error('Error adding task:', e);
-                alert('Failed to add task.');
-            }
-        }
-
-        function editTask(week, day, index) {
-            try {
-                const task = state.tasks[week][day][index];
-                if (!task) {
-                    alert('Task not found.');
-                    return;
-                }
-                state.editingTask = { week, day, index };
-                DOM.taskSubject.value = task.subject;
-                DOM.taskTopic.value = task.topic;
-                DOM.taskDetails.value = task.details;
-                toggleAddTaskForm(false);
-            } catch (e) {
-                console.error('Error editing task:', e);
-                alert('Failed to edit task.');
-            }
-        }
-
-        function saveEditedTask() {
-            try {
-                if (!state.editingTask) {
-                    alert('No task selected for editing.');
-                    return;
-                }
-                const { week, day, index } = state.editingTask;
-                const subject = DOM.taskSubject.value.trim();
-                const topic = DOM.taskTopic.value.trim();
-                const details = DOM.taskDetails.value.trim() || 'No details provided';
-                if (!subject || !topic) {
-                    alert('Subject and description are required.');
-                    DOM.taskSubject.focus();
-                    return;
-                }
-                const subjectColor = subject.toUpperCase() === 'MATHS' || subject.toUpperCase() === 'ENGLISH' ? 'text-blue-600' : 'text-gray-800';
-                state.tasks[week][day][index] = {
-                    subject: subject.toUpperCase(),
-                    topic,
-                    details,
-                    subjectColor,
-                    completed: state.tasks[week][day][index].completed
-                };
-                saveData.tasks();
-                updateTasks();
-                cancelTaskForm();
-                utils.playSound(sounds.addTask);
-            } catch (e) {
-                console.error('Error saving edited task:', e);
-                alert('Failed to save task.');
-            }
-        }
-
-        function markTaskCompleted(week, day, index, status) {
-            try {
-                state.tasks[week][day][index].completed = status;
-                if (status === true) {
-                    utils.triggerConfetti();
-                    utils.playSound(sounds.completeTask);
-                }
-                saveData.tasks();
-                updateTasks();
-            } catch (e) {
-                console.error('Error marking task:', e);
-                alert('Failed to update task status.');
-            }
-        }
-
-        function showDeleteConfirm(week, day, index) {
-            state.pendingDelete = { week, day, index };
-            DOM.deleteConfirmModal.classList.remove('hidden');
-            DOM.deleteConfirmModal.querySelector('button[aria-label="Cancel Deletion"]').focus();
-        }
-
-        function confirmDelete() {
-            try {
-                const { week, day, index } = state.pendingDelete;
-                const deletedTask = state.tasks[week][day][index];
-                state.deletedTasks.push({ week, day, index, task: deletedTask, timestamp: new Date().toISOString() });
-                state.tasks[week][day].splice(index, 1);
-                saveData.tasks();
-                saveData.deletedTasks();
-                updateTasks();
-                DOM.deleteConfirmModal.classList.add('hidden');
-                state.pendingDelete = null;
-                utils.playSound(sounds.deleteTask);
-            } catch (e) {
-                console.error('Error deleting task:', e);
-                alert('Failed to delete task.');
-            }
-        }
-
-        function cancelDelete() {
-            DOM.deleteConfirmModal.classList.add('hidden');
-            state.pendingDelete = null;
-        }
-
-        function openRecycleBinModal() {
-            DOM.recycleBinModal.classList.remove('hidden');
-            updateRecycleBinContent();
-            DOM.recycleBinModal.querySelector('button[aria-label="Close Recycle Bin"]').focus();
-        }
-
-        function closeRecycleBinModal() {
-            DOM.recycleBinModal.classList.add('hidden');
-        }
-
-        function updateRecycleBinContent() {
-            try {
-                DOM.recycleBinContent.innerHTML = '';
-                if (state.deletedTasks.length === 0) {
-                    DOM.recycleBinContent.innerHTML = '<p class="text-gray-600">No deleted tasks.</p>';
-                    return;
-                }
-                state.deletedTasks.forEach((item, index) => {
-                    const task = item.task;
-                    const taskDiv = document.createElement('div');
-                    taskDiv.className = 'p-4 bg-gray-100 rounded-lg flex justify-between items-center border border-gray-200';
-                    taskDiv.innerHTML = `
-                        <div>
-                            <p class="font-bold ${task.subjectColor}">${task.subject}</p>
-                            <p class="text-gray-700">${task.topic}</p>
-                            <p class="text-gray-600 text-sm italic">Deleted: ${new Date(item.timestamp).toLocaleString()}</p>
-                        </div>
-                        <div class="flex space-x-2">
-                            <button onclick="restoreTask(${index})" class="text-gray-500 hover:bg-gray-200 p-2 rounded-full transition duration-300 relative" aria-label="Restore Task">
-                                <i class="fas fa-undo text-xl"></i>
-                                <span class="tooltip">Restore Task</span>
-                            </button>
-                            <button onclick="deleteTaskPermanently(${index})" class="text-gray-500 hover:bg-gray-200 p-2 rounded-full transition duration-300 relative" aria-label="Permanently Delete Task">
-                                <i class="fas fa-trash-alt text-xl"></i>
-                                <span class="tooltip">Permanently Delete</span>
-                            </button>
-                        </div>
-                    `;
-                    DOM.recycleBinContent.appendChild(taskDiv);
-                });
-            } catch (e) {
-                console.error('Error updating recycle bin:', e);
-                alert('Failed to load recycle bin.');
-            }
-        }
-
-        function restoreTask(index) {
-            try {
-                const { week, day, task } = state.deletedTasks[index];
-                if (!state.tasks[week]) state.tasks[week] = {};
-                if (!state.tasks[week][day]) state.tasks[week][day] = [];
-                state.tasks[week][day].push(task);
-                state.deletedTasks.splice(index, 1);
-                saveData.tasks();
-                saveData.deletedTasks();
-                updateRecycleBinContent();
-                updateTasks();
-                utils.playSound(sounds.restoreTask);
-            } catch (e) {
-                console.error('Error restoring task:', e);
-                alert('Failed to restore task.');
-            }
-        }
-
-        function deleteTaskPermanently(index) {
-            try {
-                state.deletedTasks.splice(index, 1);
-                saveData.deletedTasks();
-                updateRecycleBinContent();
-                utils.playSound(sounds.deleteTask);
-            } catch (e) {
-                console.error('Error permanently deleting task:', e);
-                alert('Failed to permanently delete task.');
-            }
-        }
-
-        function clearRecycleBin() {
-            try {
-                state.deletedTasks = [];
-                saveData.deletedTasks();
-                updateRecycleBinContent();
-                utils.playSound(sounds.deleteTask);
-            } catch (e) {
-                console.error('Error clearing recycle bin:', e);
-                alert('Failed to clear recycle bin.');
-            }
-        }
-
-        function duplicateTaskToNextDay(week, day, index) {
-            try {
-                if (!state.tasks[week][day] || index < 0 || index >= state.tasks[week][day].length) {
-                    alert('Task not found.');
-                    return;
-                }
-                const task = { ...state.tasks[week][day][index], completed: null };
-                const dayIndex = state.baseDays.indexOf(day);
-                let nextDay, nextWeek = week;
-                if (dayIndex + 1 < state.baseDays.length) {
-                    nextDay = state.baseDays[dayIndex + 1];
-                } else {
-                    nextDay = state.baseDays[0];
-                    const weekNum = parseInt(week.replace('Week - ', '')) + 1;
-                    nextWeek = `Week - ${weekNum}`;
-                    if (!state.tasks[nextWeek]) {
-                        state.tasks[nextWeek] = {};
-                        state.baseDays.forEach(d => state.tasks[nextWeek][d] = []);
-                    }
-                }
-                state.tasks[nextWeek][nextDay].push(task);
-                saveData.tasks();
-                updateWeeks();
-                updateTasks();
-                utils.playSound(sounds.addTask);
-            } catch (e) {
-                console.error('Error duplicating task:', e);
-                alert('Failed to duplicate task.');
-            }
-        }
-
-        function showTaskDetails(week, day, index) {
-            try {
-                const task = state.tasks[week][day][index];
-                const status = task.completed === true ? 'Completed' : task.completed === false ? 'Pending' : 'Not Started';
-                DOM.taskDetailsContent.innerHTML = `
-                    <p><span class="font-bold text-gray-800 text-shadow-sm">Subject:</span> <span class="${task.subjectColor}">${task.subject}</span></p>
-                    <p><span class="font-bold text-gray-800 text-shadow-sm">Topic:</span> ${task.topic}</p>
-                    <p><span class="font-bold text-gray-800 text-shadow-sm">Details:</span> ${task.details}</p>
-                    <p><span class="font-bold text-gray-800 text-shadow-sm">Status:</span> ${status}</p>
-                    <p><span class="font-bold text-gray-800 text-shadow-sm">Week:</span> ${week}</p>
-                    <p><span class="font-bold text-gray-800 text-shadow-sm">Day:</span> ${day}</p>
-                `;
-                DOM.taskDetailsModal.classList.remove('hidden');
-                DOM.taskDetailsModal.querySelector('button[aria-label="Close Task Details"]').focus();
-            } catch (e) {
-                console.error('Error showing task details:', e);
-                alert('Failed to show task details.');
-            }
-        }
-
-        function closeTaskDetailsModal() {
-            DOM.taskDetailsModal.classList.add('hidden');
-        }
-
-        function updateProgressChart() {
-            try {
-                const timeframe = DOM.progressTimeframe.value;
-                let labels = [], completedData = [], pendingData = [], notStartedData = [];
-                if (timeframe === 'daily') {
-                    labels = state.baseDays;
-                    state.baseDays.forEach(day => {
-                        let completed = 0, pending = 0, notStarted = 0;
-                        const tasks = state.tasks[`Week - ${state.currentWeek}`][day] || [];
-                        tasks.forEach(task => {
-                            if (task.completed === true) completed++;
-                            else if (task.completed === false) pending++;
-                            else notStarted++;
-                        });
-                        completedData.push(completed);
-                        pendingData.push(pending);
-                        notStartedData.push(notStarted);
-                    });
-                } else if (timeframe === 'weekly') {
-                    const totalWeeks = Math.min(Math.ceil(state.totalWeekdays / state.countedDays.length), 4);
-                    for (let i = Math.max(1, state.currentWeek - 3); i <= state.currentWeek; i++) {
-                        labels.push(`Week ${i}`);
-                        let completed = 0, pending = 0, notStarted = 0;
-                        state.baseDays.forEach(day => {
-                            const tasks = state.tasks[`Week - ${i}`]?.[day] || [];
-                            tasks.forEach(task => {
-                                if (task.completed === true) completed++;
-                                else if (task.completed === false) pending++;
-                                else notStarted++;
-                            });
-                        });
-                        completedData.push(completed);
-                        pendingData.push(pending);
-                        notStartedData.push(notStarted);
-                    }
-                } else if (timeframe === 'monthly') {
-                    const { start, end } = utils.getMonthRange(state.TODAY_DATE);
-                    let current = new Date(start);
-                    const maxMonths = 12;
-                    let monthCount = 0;
-                    while (current <= end && monthCount < maxMonths) {
-                        labels.push(current.toLocaleString('en-US', { month: 'short', year: 'numeric' }));
-                        let completed = 0, pending = 0, notStarted = 0;
-                        Object.keys(state.tasks).forEach(week => {
-                            state.baseDays.forEach(day => {
-                                const date = utils.calculateDate(parseInt(week.replace('Week - ', '')), day);
-                                if (date.getMonth() === current.getMonth() && date.getFullYear() === current.getFullYear()) {
-                                    const tasks = state.tasks[week][day] || [];
-                                    tasks.forEach(task => {
-                                        if (task.completed === true) completed++;
-                                        else if (task.completed === false) pending++;
-                                        else notStarted++;
-                                    });
-                                }
-                            });
-                        });
-                        completedData.push(completed);
-                        pendingData.push(pending);
-                        notStartedData.push(notStarted);
-                        current.setMonth(current.getMonth() + 1);
-                        monthCount++;
-                    }
-                }
-
-                if (state.chart) state.chart.destroy();
-                const isDark = document.body.getAttribute('data-theme') === 'dark';
-                state.chart = new Chart(DOM.progressChart, {
-                    type: 'line',
-                    data: {
-                        labels,
-                        datasets: [
-                            { label: 'Completed', data: completedData, borderColor: '#34D399', backgroundColor: 'rgba(52, 211, 153, 0.2)', fill: true, tension: 0.4 },
-                            { label: 'Pending', data: pendingData, borderColor: '#F87171', backgroundColor: 'rgba(248, 113, 113, 0.2)', fill: true, tension: 0.4 },
-                            { label: 'Not Started', data: notStartedData, borderColor: '#E5E7EB', backgroundColor: 'rgba(229, 231, 235, 0.2)', fill: true, tension: 0.4 }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: { labels: { color: isDark ? '#e5e7eb' : '#1f2937' } },
-                            title: { display: true, text: `${timeframe.charAt(0).toUpperCase() + timeframe.slice(1)} Task Progress`, color: isDark ? '#e5e7eb' : '#1f2937', font: { size: 16 } }
-                        },
-                        scales: {
-                            y: { beginAtZero: true, ticks: { color: isDark ? '#e5e7eb' : '#1f2937' }, grid: { color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' } },
-                            x: { ticks: { color: isDark ? '#e5e7eb' : '#1f2937' }, grid: { display: false } }
-                        }
-                    }
-                });
-            } catch (e) {
-                console.error('Error updating chart:', e);
-                alert('Failed to update chart.');
-            }
-        }
-
-        function openProgressChartModal() {
-            DOM.progressChartModal.classList.remove('hidden');
-            updateProgressChart();
-        }
-
-        function closeProgressChartModal() {
-            DOM.progressChartModal.classList.add('hidden');
-            if (state.chart) {
-                state.chart.destroy();
-                state.chart = null;
-            }
-        }
-
-        function handleDragStart(week, day, index, element) {
-            state.draggedIndex = index;
-            state.isDragging = true;
-            element.classList.add('opacity-50');
-        }
-
-        function handleDragOver(e) {
-            e.preventDefault();
-        }
-
-        function handleDragEnd(element) {
-            element.classList.remove('opacity-50');
-            state.isDragging = false;
-        }
-
-        function handleDrop(week, day, index, element) {
-            if (state.draggedIndex === null || state.draggedIndex === index) return;
-            const task = state.tasks[week][day][state.draggedIndex];
-            state.tasks[week][day].splice(state.draggedIndex, 1);
-            state.tasks[week][day].splice(index, 0, task);
-            state.draggedIndex = null;
-            saveData.tasks();
-            updateTasks();
-        }
-
-        function handleTaskClick(week, day, index, e) {
-            if (e.target.closest('button')) return;
-            if (state.isDragging) return;
-            const task = state.tasks[week][day][index];
-            const url = utils.getFirstUrlFromText(task.details);
-            if (url) {
-                try {
-                    window.open(url, '_blank');
-                } catch (e) {
-                    console.error('Error opening URL:', e);
-                    alert('Failed to open URL.');
-                }
-            }
-        }
-
-        function handleSearchInput() {
-            const query = DOM.taskSearch.value.trim();
-            DOM.searchClear.classList.toggle('visible', query.length > 0);
-            updateTasks();
-        }
-
-        function clearSearch() {
-            DOM.taskSearch.value = '';
-            DOM.searchClear.classList.remove('visible');
-            updateTasks();
-            DOM.taskSearch.focus();
-        }
-
-        // Voice input functionality
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        let recognition = null;
-        if (SpeechRecognition) {
-            recognition = new SpeechRecognition();
-            recognition.lang = 'en-US';
-            recognition.interimResults = false;
-            recognition.maxAlternatives = 1;
-
-            DOM.voiceSubjectButton.addEventListener('click', () => {
-                recognition.start();
-                DOM.voiceSubjectButton.classList.add('text-red-500');
-                recognition.onresult = (event) => {
-                    DOM.taskSubject.value = event.results[0][0].transcript;
-                    DOM.taskSubject.dispatchEvent(new Event('input'));
-                    DOM.voiceSubjectButton.classList.remove('text-red-500');
-                };
-                recognition.onerror = (event) => {
-                    console.error('Speech recognition error:', event.error);
-                    alert('Voice input failed: ' + event.error);
-                    DOM.voiceSubjectButton.classList.remove('text-red-500');
-                };
-                recognition.onend = () => {
-                    DOM.voiceSubjectButton.classList.remove('text-red-500');
-                };
-            });
-
-            DOM.voiceTopicButton.addEventListener('click', () => {
-                recognition.start();
-                DOM.voiceTopicButton.classList.add('text-red-500');
-                recognition.onresult = (event) => {
-                    DOM.taskTopic.value = event.results[0][0].transcript;
-                    DOM.taskTopic.dispatchEvent(new Event('input'));
-                    DOM.voiceTopicButton.classList.remove('text-red-500');
-                };
-                recognition.onerror = (event) => {
-                    console.error('Speech recognition error:', event.error);
-                    alert('Voice input failed: ' + event.error);
-                    DOM.voiceTopicButton.classList.remove('text-red-500');
-                };
-                recognition.onend = () => {
-                    DOM.voiceTopicButton.classList.remove('text-red-500');
-                };
-            });
-        } else {
-            DOM.voiceSubjectButton.style.display = 'none';
-            DOM.voiceTopicButton.style.display = 'none';
-            console.warn('Speech recognition not supported in this browser.');
-        }
-
-        function updateTasks() {
-            try {
-                DOM.taskList.innerHTML = '';
-                const searchQuery = DOM.taskSearch.value.trim().toLowerCase();
-                const tasks = state.tasks[`Week - ${state.currentWeek}`]?.[state.currentDay] || [];
-                let tasksWithIndices = tasks.map((task, index) => ({ task, originalIndex: index }));
-
-                if (searchQuery) {
-                    tasksWithIndices = tasksWithIndices.filter(({ task }) =>
-                        task.subject.toLowerCase().includes(searchQuery) || task.topic.toLowerCase().includes(searchQuery)
-                    );
-                }
-
-                let totalTasks = 0, completedTasks = 0;
-                tasks.forEach(task => {
-                    totalTasks++;
-                    if (task.completed === true) completedTasks++;
-                });
-
-                DOM.taskCount.textContent = `${tasksWithIndices.length}/${tasks.length}`;
-                DOM.statsTotal.textContent = `Total: ${totalTasks}`;
-                DOM.statsCompleted.textContent = `Completed: ${completedTasks}`;
-                const completionPercentage = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
-                DOM.statsPercentage.textContent = `Completion: ${completionPercentage}%`;
-                DOM.progressBarFill.style.width = `${completionPercentage}%`;
-
-                tasksWithIndices.forEach(({ task, originalIndex }) => {
-                    const bgColor = task.completed === true ? 'bg-gradient-to-r from-green-200 to-teal-200' :
-                                    task.completed === false ? 'bg-gradient-to-r from-red-200 to-pink-200' :
-                                    'bg-gradient-to-r from-gray-100 to-white';
-                    const taskDiv = document.createElement('div');
-                    taskDiv.draggable = true;
-                    const hasUrl = utils.getFirstUrlFromText(task.details);
-                    taskDiv.className = `task-card shadow-lg rounded-2xl p-6 flex justify-between items-center transition duration-300 ${bgColor} border border-indigo-100 ${hasUrl ? 'cursor-pointer' : 'cursor-move'}`;
-                    taskDiv.setAttribute('aria-label', `Task: ${task.subject} - ${task.topic}`);
-                    taskDiv.addEventListener('dragstart', (e) => handleDragStart(`Week - ${state.currentWeek}`, state.currentDay, originalIndex, taskDiv));
-                    taskDiv.addEventListener('dragover', handleDragOver);
-                    taskDiv.addEventListener('dragend', () => handleDragEnd(taskDiv));
-                    taskDiv.addEventListener('drop', () => handleDrop(`Week - ${state.currentWeek}`, state.currentDay, originalIndex, taskDiv));
-                    taskDiv.addEventListener('click', (e) => handleTaskClick(`Week - ${state.currentWeek}`, state.currentDay, originalIndex, e));
-                    taskDiv.addEventListener('dblclick', () => editTask(`Week - ${state.currentWeek}`, state.currentDay, originalIndex));
-                    taskDiv.innerHTML = `
-                        <div class="flex items-center space-x-4">
-                            <div class="flex flex-col space-y-2">
-                                <button onclick="markTaskCompleted('Week - ${state.currentWeek}', '${state.currentDay}', ${originalIndex}, true)" 
-                                        class="w-6 h-6 bg-gradient-to-r from-green-400 to-teal-500 rounded-full hover:bg-green-600 transition duration-300 relative" aria-label="Mark Task as Completed">
-                                    <span class="tooltip">Mark as Completed</span>
-                                </button>
-                                <button onclick="markTaskCompleted('Week - ${state.currentWeek}', '${state.currentDay}', ${originalIndex}, false)" 
-                                        class="w-6 h-6 bg-gradient-to-r from-red-400 to-pink-500 rounded-full hover:bg-red-600 transition duration-300 relative" aria-label="Mark Task as Pending">
-                                    <span class="tooltip">Mark as Pending</span>
-                                </button>
-                                <button onclick="markTaskCompleted('Week - ${state.currentWeek}', '${state.currentDay}', ${originalIndex}, null)" 
-                                        class="w-6 h-6 bg-gradient-to-r from-gray-100 to-white rounded-full hover:bg-gray-200 transition duration-300 relative" aria-label="Clear Task Progress">
-                                    <span class="tooltip">Clear Progress</span>
-                                </button>
-                            </div>
-                            <div>
-                                <div class="flex items-center space-x-2">
-                                    <span class="${task.subjectColor} font-bold text-xl font-['Playfair_Display']">${task.subject}</span>
-                                </div>
-                                <p class="text-gray-700 text-lg">${task.topic}</p>
-                                <p class="text-gray-600 text-sm italic">${task.details}</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-4">
-                            <button onclick="showTaskDetails('Week - ${state.currentWeek}', '${state.currentDay}', ${originalIndex})" 
-                                    class="text-gray-500 hover:bg-gray-100 hover:text-gray-700 p-2 rounded-full transition duration-300 relative" aria-label="View Task Details">
-                                <i class="fas fa-info-circle text-xl"></i>
-                                <span class="tooltip">View Details</span>
-                            </button>
-                            <button onclick="duplicateTaskToNextDay('Week - ${state.currentWeek}', '${state.currentDay}', ${originalIndex})" 
-                                    class="text-gray-500 hover:bg-gray-100 hover:text-gray-700 p-2 rounded-full transition duration-300 relative" aria-label="Duplicate to Next Day">
-                                <i class="fas fa-repeat text-xl"></i>
-                                <span class="tooltip">Duplicate to Next Day</span>
-                            </button>
-                            <button onclick="showDeleteConfirm('Week - ${state.currentWeek}', '${state.currentDay}', ${originalIndex})" 
-                                    class="text-gray-500 hover:bg-gray-100 hover:text-gray-700 p-2 rounded-full transition duration-300 relative" aria-label="Delete Task">
-                                <i class="fas fa-trash-alt text-xl"></i>
-                                <span class="tooltip">Delete Task</span>
-                            </button>
-                        </div>
-                    `;
-                    DOM.taskList.appendChild(taskDiv);
-                });
-            } catch (e) {
-                console.error('Error updating tasks:', e);
-                alert('Failed to update tasks.');
-            }
-        }
-
-        function initializeApp() {
-            if (!utils.testLocalStorage()) return;
-            loadData.headerPhoto();
-            loadData.startDate();
-            loadData.totalWeekdays();
-            loadData.countedDays();
-            loadData.tasks();
-            loadData.deletedTasks();
-            calculateCurrentWeekAndDay();
-            updateWeeks();
-            updateTimeDisplay();
-            updateTasks();
-        }
-
-        initializeApp();
-    </script>
 </body>
+<script>
+  const state = {
+    startDate: new Date('2025-06-01'),
+    currentWeek: 1,
+    currentDay: 'Th',
+    totalWeekdays: 600,
+    baseDays: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
+    countedDays: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
+    tasks: {},
+    deletedTasks: [],
+    headerPhotoUrl: 'https://via.placeholder.com/80',
+    draggedIndex: null,
+    chart: null,
+    editingTask: null,
+    pendingDeleteModal: null,
+    isAdd: true,
+    timers: { active: new Map() },
+    dailyTimeRecords: {}
+};
+
+const DOM = {
+    editForm: document.getElementById('editForm'),
+    totalDaysInput: document.getElementById('totalDaysInput'),
+    startDateInput: document.getElementById('startDateInput'),
+    headerPhotoInput: document.getElementById('headerPhotoInput'),
+    headerPhoto: document.getElementById('headerPhoto'),
+    currentDate: document.getElementById('currentDate'),
+    currentDayCount: document.getElementById('currentDayCount'),
+    currentTime: document.getElementById('currentTime'),
+    taskList: document.getElementById('taskList'),
+    weekSelect: document.getElementById('weekSelect'),
+    dayButtons: document.getElementById('dayButtons'),
+    addTaskForm: document.getElementById('addTaskForm'),
+    taskFormTitle: document.getElementById('taskFormTitle'),
+    taskSubject: document.getElementById('taskSubject'),
+    taskTopic: document.getElementById('taskTopic'),
+    taskDetails: document.getElementById('taskDetails'),
+    taskFormSubmit: document.getElementById('taskFormSubmit'),
+    taskSearch: document.getElementById('taskSearch'),
+    searchClear: document.getElementById('searchClear'),
+    dailyTimeTotal: document.getElementById('dailyTimeTotal'),
+    dailyTimeInput: document.getElementById('dailyTimeInput'),
+    completedTasksCount: document.getElementById('completedTasksCount'),
+    pendingTasksCount: document.getElementById('pendingTasksCount'),
+    totalTasksCount: document.getElementById('totalTasksCount'),
+    taskDetailsModal: document.getElementById('taskDetailsModal'),
+    taskDetailsContent: document.getElementById('taskDetailsContent'),
+    deleteConfirmModal: document.getElementById('deleteConfirmModal'),
+    progressChartModal: document.getElementById('progressChartModal'),
+    progressTimeframe: document.getElementById('progressTimeframe'),
+    progressChart: document.getElementById('progressChart'),
+    dayCheckboxes: document.querySelectorAll('.day-checkbox'),
+    voiceSubjectButton: document.getElementById('voiceSubjectButton'),
+    voiceTopicButton: document.getElementById('voiceTopicButton'),
+    toast: document.getElementById('toast'),
+    toastMessage: document.getElementById('toastMessage'),
+    recycleBin: document.getElementById('recycleBin'),
+    deletedTasksList: document.getElementById('deletedTasksList'),
+    taskCount: document.getElementById('taskCount'),
+    totalTasks: document.getElementById('totalTasks'),
+    completedTasks: document.getElementById('completedTasks'),
+    completionPercentage: document.getElementById('completionPercentage'),
+    progressBarFill: document.getElementById('progressBarFill'),
+    clearAllButton: document.getElementById('clearAllButton')
+};
+
+const dayColors = {
+    Mo: { bg: 'bg-red-300', hoverBg: 'hover:bg-red-400' },
+    Tu: { bg: 'bg-orange-300', hoverBg: 'hover:bg-orange-400' },
+    We: { bg: 'bg-yellow-300', hoverBg: 'hover:bg-yellow-400' },
+    Th: { bg: 'bg-green-300', hoverBg: 'hover:bg-green-400' },
+    Fr: { bg: 'bg-blue-400', hoverBg: 'hover:bg-blue-500' },
+    Sa: { bg: 'bg-indigo-400', hoverBg: 'hover:bg-indigo-500' },
+    Su: { bg: 'bg-purple-400', hoverBg: 'hover:bg-purple-500' }
+};
+
+const sounds = {
+    addTask: new Audio('https://cdn.pixabay.com/download/audio/2022/03/24/audio_8f76233b1a.mp3?filename=click-21156.mp3'),
+    deleteTask: new Audio('https://cdn.pixabay.com/download/audio/2022/05/13/audio_5a3d5c0d3b.mp3?filename=trash-80300.mp3'),
+    completeTask: new Audio('https://cdn.pixabay.com/download/audio/2022/03/24/audio_b4adfa07fd.mp3?filename=success-1-6297.mp3'),
+    restoreTask: new Audio('https://cdn.pixabay.com/download/audio/2022/03/24/audio_4b3b3b3b3b.mp3?filename=pop-39222.mp3'),
+    startTimer: new Audio('https://cdn.pixabay.com/audio/2023/03/22/audio_3d1f4e3a1e.mp3'),
+    stopTimer: new Audio('https://cdn.pixabay.com/audio/2023/03/22/audio_4e2e4e3a1e.mp3')
+};
+
+const utils = {
+    storage: {
+        save: (key, value) => localStorage.setItem(key, JSON.stringify(value)),
+        load: key => JSON.parse(localStorage.getItem(key) || '{}')
+    },
+    getDayOfWeek: date => state.baseDays[date.getDay() === 0 ? 6 : date.getDay() - 1],
+    countWeekdaysBetween: (start, end) => {
+        let count = 0, current = new Date(start);
+        current.setHours(0, 0, 0, 0);
+        end.setHours(0, 0, 0, 0);
+        while (current <= end) {
+            if (state.countedDays.includes(utils.getDayOfWeek(current))) count++;
+            current.setDate(current.getDate() + 1);
+        }
+        return count;
+    },
+    calculateDate: (week, day) => {
+        const date = new Date(state.startDate);
+        date.setDate(date.getDate() + (week - 1) * 7 + state.baseDays.indexOf(day));
+        return date;
+    },
+    getFirstUrlFromText: text => {
+        const match = text.match(/(https?:\/\/[^\s]+)|(www\.[^\s]+)|((?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?:\/[^\s]*)?)/);
+        return match ? match[0].startsWith('http') ? match[0] : 'https://' + match[0] : null;
+    },
+    triggerConfetti: () => confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }),
+    getMonthRange: date => ({ start: new Date(date.getFullYear(), date.getMonth(), 1), end: new Date(date.getFullYear(), date.getMonth() + 1, 0) }),
+    playSound: sound => sound.play().catch(() => {}),
+    showToast: (msg, type = 'error') => {
+        DOM.toast.className = `fixed top-4 right-4 bg-${type === 'error' ? 'red' : 'green'}-600 text-white p-4 rounded-lg shadow-lg`;
+        DOM.toastMessage.textContent = msg;
+        DOM.toast.classList.remove('hidden');
+        setTimeout(() => utils.hideToast(), 3000);
+    },
+    hideToast: () => DOM.toast.classList.add('hidden'),
+    formatTime: seconds => {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        return `${hours}h ${minutes}m ${secs}s`;
+    },
+    parseTimeInput: input => {
+        const regex = /^(\d+h)?\s*(\d+m)?\s*(\d+s)?$/;
+        const match = input.trim().match(regex);
+        if (!match) return null;
+        let seconds = 0;
+        if (match[1]) seconds += parseInt(match[1]) * 3600;
+        if (match[2]) seconds += parseInt(match[2]) * 60;
+        if (match[3]) seconds += parseInt(match[3]);
+        return seconds;
+    },
+    getDateKey: date => date.toISOString().split('T')[0]
+};
+
+const loadData = () => {
+    state.headerPhotoUrl = utils.storage.load('plannerHeaderPhoto') || state.headerPhotoUrl;
+    DOM.headerPhoto.src = DOM.headerPhotoInput.value = state.headerPhotoUrl;
+    state.startDate = new Date(utils.storage.load('plannerStartDate') || state.startDate);
+    DOM.startDateInput.value = state.startDate.toISOString().split('T')[0];
+    state.totalWeekdays = parseInt(utils.storage.load('plannerTotalWeekdays')) || state.totalWeekdays;
+    DOM.totalDaysInput.value = state.totalWeekdays;
+    state.countedDays = utils.storage.load('plannerCountedDays') || state.countedDays;
+    DOM.dayCheckboxes.forEach(cb => cb.checked = state.countedDays.includes(cb.value));
+    state.tasks = utils.storage.load('plannerTasks') || initializeTasks();
+    state.deletedTasks = utils.storage.load('plannerDeletedTasks') || [];
+    state.dailyTimeRecords = utils.storage.load('dailyTimeRecords') || {};
+};
+
+const initializeTasks = () => {
+    const tasks = {};
+    const totalWeeks = Math.ceil(state.totalWeekdays / state.countedDays.length);
+    for (let i = 1; i <= totalWeeks; i++) {
+        tasks[`Week${i}`] = Object.fromEntries(state.baseDays.map(day => [day, []]));
+    }
+    return tasks;
+};
+
+const saveSettings = () => {
+    const newStartDate = new Date(DOM.startDateInput.value);
+    if (isNaN(newStartDate.getTime())) return utils.showToast('Invalid start date', 'error');
+    state.startDate = newStartDate;
+    utils.storage.save('plannerStartDate', state.startDate.toISOString());
+
+    const newTotalWeekdays = parseInt(DOM.totalDaysInput.value);
+    if (newTotalWeekdays < 1) return utils.showToast('Total days must be at least 1', 'error');
+    state.totalWeekdays = newTotalWeekdays;
+    utils.storage.save('plannerTotalWeekdays', state.totalWeekdays);
+
+    state.countedDays = Array.from(DOM.dayCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+    if (!state.countedDays.length) return utils.showToast('Select at least one day', 'error');
+    utils.storage.save('plannerCountedDays', state.countedDays);
+
+    const newHeaderPhotoUrl = DOM.headerPhotoInput.value.trim();
+    if (newHeaderPhotoUrl) {
+        state.headerPhotoUrl = DOM.headerPhoto.src = newHeaderPhotoUrl;
+        utils.storage.save('plannerHeaderPhoto', newHeaderPhotoUrl);
+    }
+
+    toggleEditForm();
+    updateWeeks();
+    calculateCurrentWeekAndDay();
+    updateDateDisplay();
+    updateTasks();
+};
+
+const calculateCurrentWeekAndDay = () => {
+    const today = new Date();
+    const totalDaysSinceStart = Math.floor((today - state.startDate) / (1000 * 60 * 60 * 24));
+    let countedDays = 0, currentDate = new Date(state.startDate);
+    currentDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    while (currentDate <= today) {
+        if (state.countedDays.includes(utils.getDayOfWeek(currentDate))) countedDays++;
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    state.currentWeek = Math.max(1, Math.ceil(countedDays / state.countedDays.length));
+    state.currentDay = utils.getDayOfWeek(today);
+};
+
+const updateDateDisplay = () => {
+    const date = utils.calculateDate(state.currentWeek, state.currentDay);
+    DOM.currentDate.textContent = date.toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const dayNumber = Math.max(0, utils.countWeekdaysBetween(state.startDate, date));
+    DOM.currentDayCount.textContent = `Day ${dayNumber}/${state.totalWeekdays}`;
+};
+
+let timeInterval;
+const updateTimeDisplay = () => {
+    clearInterval(timeInterval);
+    timeInterval = setInterval(() => {
+        const now = new Date();
+        DOM.currentTime.textContent = now.toLocaleTimeString('en-US', { hour12: true, timeZone: 'Asia/Kolkata' }) + ' IST';
+        if (now.getHours() === 0 && now.getMinutes() === 0 && now.getSeconds() < 2) {
+            recordDailyTime();
+            advanceDay();
+        }
+    }, 1000);
+};
+
+const recordDailyTime = () => {
+    const date = new Date();
+    const dateKey = utils.getDateKey(date);
+    const week = `Week${state.currentWeek}`;
+    const tasks = state.tasks[week]?.[state.currentDay] || [];
+    const totalTime = tasks.reduce((sum, task) => sum + getTaskTimeSpent(task), 0);
+    state.dailyTimeRecords[dateKey] = totalTime;
+    utils.storage.save('dailyTimeRecords', state.dailyTimeRecords);
+    updateDailySummary();
+};
+
+const editDailyTime = () => {
+    const currentTime = DOM.dailyTimeTotal.textContent;
+    DOM.dailyTimeTotal.classList.add('hidden');
+    DOM.dailyTimeInput.classList.remove('hidden');
+    DOM.dailyTimeInput.value = currentTime;
+    DOM.dailyTimeInput.focus();
+};
+
+const saveDailyTime = () => {
+    const input = DOM.dailyTimeInput.value.trim();
+    const seconds = utils.parseTimeInput(input);
+    if (seconds === null) {
+        utils.showToast('Invalid time format. Use e.g., 2h 30m 15s', 'error');
+        DOM.dailyTimeInput.classList.add('hidden');
+        DOM.dailyTimeTotal.classList.remove('hidden');
+        return;
+    }
+    const date = utils.calculateDate(state.currentWeek, state.currentDay);
+    const dateKey = utils.getDateKey(date);
+    state.dailyTimeRecords[dateKey] = seconds;
+    utils.storage.save('dailyTimeRecords', state.dailyTimeRecords);
+    DOM.dailyTimeTotal.textContent = utils.formatTime(seconds);
+    DOM.dailyTimeInput.classList.add('hidden');
+    DOM.dailyTimeTotal.classList.remove('hidden');
+    updateDailySummary();
+};
+
+const updateDailySummary = () => {
+    const week = `Week${state.currentWeek}`;
+    const tasks = state.tasks[week]?.[state.currentDay] || [];
+    const totalTime = tasks.reduce((sum, task) => sum + getTaskTimeSpent(task), 0);
+    const date = utils.calculateDate(state.currentWeek, state.currentDay);
+    const dateKey = utils.getDateKey(date);
+    state.dailyTimeRecords[dateKey] = totalTime;
+    utils.storage.save('dailyTimeRecords', state.dailyTimeRecords);
+    DOM.dailyTimeTotal.textContent = utils.formatTime(totalTime);
+    
+    const completed = tasks.filter(t => t.completed === true).length;
+    const pending = tasks.filter(t => t.completed === false).length;
+    const total = tasks.length;
+    
+    DOM.completedTasksCount.textContent = completed;
+    DOM.pendingTasksCount.textContent = pending;
+    DOM.totalTasksCount.textContent = total;
+};
+
+const advanceDay = () => {
+    const dayIndex = state.baseDays.indexOf(state.currentDay);
+    if (dayIndex + 1 < state.baseDays.length) {
+        state.currentDay = state.baseDays[dayIndex + 1];
+    } else {
+        state.currentDay = state.baseDays[0];
+        state.currentWeek++;
+    }
+    updateWeeks();
+    updateTasks();
+    updateDateDisplay();
+};
+
+const updateWeeks = () => {
+    const totalWeeks = Math.ceil(state.totalWeekdays / state.countedDays.length);
+    DOM.weekSelect.innerHTML = Array.from({ length: totalWeeks }, (_, i) => `<option value="${i + 1}" ${i + 1 === state.currentWeek ? 'selected' : ''}>Week ${i + 1}</option>`).join('');
+    Object.keys(state.tasks).forEach(week => {
+        if (parseInt(week.replace('Week', '')) > totalWeeks) delete state.tasks[week];
+    });
+    updateDays();
+    updateTasks();
+    updateDateDisplay();
+};
+
+const updateDays = () => {
+    DOM.dayButtons.innerHTML = state.baseDays.map(day => `
+        <button onclick="selectDay('${day}')" class="px-4 py-2 ${day === state.currentDay ? 'bg-blue-600 text-white shadow-inner' : `${dayColors[day].bg} ${dayColors[day].hoverBg}`} rounded-lg hover:bg-blue-100 transition-all" aria-label="Select ${day}">${day}</button>
+    `).join('');
+};
+
+const selectDay = day => {
+    state.currentDay = day;
+    updateDays();
+    updateTasks();
+    updateDateDisplay();
+};
+
+const updateWeek = () => {
+    state.currentWeek = parseInt(DOM.weekSelect.value);
+    updateTasks();
+    updateDateDisplay();
+};
+
+const toggleTheme = () => {
+    const isDark = document.body.dataset.theme === 'dark';
+    document.body.dataset.theme = isDark ? 'light' : 'dark';
+    const btn = document.querySelector('[aria-label="Toggle Theme"] i');
+    btn.className = `fas fa-lightbulb${isDark ? '' : '-regular'} text-xl`;
+    btn.nextElementSibling.textContent = `Toggle ${isDark ? 'Dark' : 'Light'} Mode`;
+    if (state.chart) updateProgressChart();
+};
+
+const toggleEditForm = () => {
+    DOM.editForm.classList.toggle('hidden');
+    if (!DOM.editForm.classList.contains('hidden')) {
+        DOM.totalDaysInput.focus();
+    }
+};
+
+const toggleAddTaskForm = (isAdd = true) => {
+    state.isAdd = isAdd;
+    DOM.taskFormTitle.textContent = isAdd ? 'Add New Task' : 'Edit Task';
+    DOM.taskFormSubmit.setAttribute('aria-label', isAdd ? 'Submit Task' : 'Save Task');
+    DOM.addTaskForm.classList.toggle('hidden');
+    if (!DOM.addTaskForm.classList.contains('hidden')) {
+        DOM.taskSubject.focus();
+    }
+    if (isAdd) {
+        DOM.taskSubject.value = '';
+        DOM.taskTopic.value = '';
+        DOM.taskDetails.value = '';
+        state.editingTask = null;
+    }
+};
+
+const cancelTaskForm = () => toggleAddTaskForm(false);
+
+const submitTaskForm = () => state.isAdd ? addTask() : saveEditedTask();
+
+const addTask = () => {
+    const subject = DOM.taskSubject.value.trim().toUpperCase();
+    const topic = DOM.taskTopic.value.trim();
+    const details = DOM.taskDetails.value.trim() || 'No details provided';
+    if (!subject || !topic) return utils.showToast('Subject and description are required', 'error');
+    const week = `Week${state.currentWeek}`;
+    state.tasks[week] ??= Object.fromEntries(state.baseDays.map(d => [d, []]));
+    state.tasks[week][state.currentDay].push({
+        subject,
+        topic,
+        details,
+        subjectColor: ['MATHS', 'ENGLISH'].includes(subject) ? 'text-blue-600' : 'text-gray-800',
+        completed: null,
+        timeSpent: 0,
+        timerStatus: 'stopped',
+        timerStart: null,
+        accumulatedTime: 0
+    });
+    utils.storage.save('plannerTasks', state.tasks);
+    updateTasks();
+    toggleAddTaskForm(false);
+    utils.playSound(sounds.addTask);
+};
+
+const editTask = (week, day, index) => {
+    state.editingTask = { week, day, index };
+    const { subject, topic, details } = state.tasks[week][day][index];
+    DOM.taskSubject.value = subject;
+    DOM.taskTopic.value = topic;
+    DOM.taskDetails.value = details;
+    toggleAddTaskForm(false);
+};
+
+const saveEditedTask = () => {
+    if (!state.editingTask) return utils.showToast('No task selected for editing', 'error');
+    const { week, day, index } = state.editingTask;
+    const subject = DOM.taskSubject.value.trim().toUpperCase();
+    const topic = DOM.taskTopic.value.trim();
+    const details = DOM.taskDetails.value.trim() || 'No details provided';
+    if (!subject || !topic) return utils.showToast('Subject and description are required', 'error');
+    state.tasks[week][day][index] = {
+        ...state.tasks[week][day][index],
+        subject,
+        topic,
+        details,
+        subjectColor: ['MATHS', 'ENGLISH'].includes(subject) ? 'text-blue-600' : 'text-gray-800'
+    };
+    utils.storage.save('plannerTasks', state.tasks);
+    updateTasks();
+    cancelTaskForm();
+    utils.playSound(sounds.addTask);
+};
+
+const getTaskTimeSpent = task => {
+    let totalTime = task.accumulatedTime || 0;
+    if (task.timerStatus === 'running' && task.timerStart) {
+        totalTime += Math.floor((Date.now() - task.timerStart) / 1000);
+    }
+    return totalTime;
+};
+
+let timerFrame = null;
+const updateTimer = () => {
+    let hasRunningTimers = false;
+    state.timers.active.forEach((_, key) => {
+        const [week, day, index] = key.split(':');
+        const task = state.tasks[week]?.[day]?.[index];
+        if (task && task.timerStatus === 'running' && task.timerStart) {
+            hasRunningTimers = true;
+            const timerElement = document.querySelector(`[data-task-id="${week}-${day}-${index}"] .task-timer`);
+            if (timerElement) {
+                timerElement.textContent = `Time Spent: ${utils.formatTime(getTaskTimeSpent(task))}`;
+            }
+        }
+    });
+    updateDailySummary();
+    updateTaskStats();
+    if (hasRunningTimers) {
+        timerFrame = requestAnimationFrame(updateTimer);
+    } else {
+        cancelAnimationFrame(timerFrame);
+        timerFrame = null;
+    }
+};
+
+const startTaskTimer = (week, day, index) => {
+    const task = state.tasks[week][day][index];
+    if (task.timerStatus === 'running') return;
+    task.timerStatus = 'running';
+    task.timerStart = task.timerStart || Date.now();
+    task.accumulatedTime = task.accumulatedTime || 0;
+    state.timers.active.set(`${week}:${day}:${index}`, true);
+    utils.storage.save('plannerTasks', state.tasks);
+    utils.playSound(sounds.startTimer);
+    if (!timerFrame) {
+        timerFrame = requestAnimationFrame(updateTimer);
+    }
+    updateTasks();
+};
+
+const pauseTaskTimer = (week, day, index) => {
+    const task = state.tasks[week][day][index];
+    if (task.timerStatus !== 'running') return;
+    task.timerStatus = 'paused';
+    task.accumulatedTime += Math.floor((Date.now() - task.timerStart) / 1000);
+    task.timerStart = null;
+    state.timers.active.delete(`${week}:${day}:${index}`);
+    utils.storage.save('plannerTasks', state.tasks);
+    utils.playSound(sounds.stopTimer);
+    updateTasks();
+    updateDailySummary();
+};
+
+const stopTaskTimer = (week, day, index) => {
+    const task = state.tasks[week][day][index];
+    if (task.timerStatus === 'stopped') return;
+    if (task.timerStatus === 'running') {
+        task.accumulatedTime += Math.floor((Date.now() - task.timerStart) / 1000);
+    }
+    task.timerStatus = 'stopped';
+    task.timerStart = null;
+    task.timeSpent = task.accumulatedTime;
+    state.timers.active.delete(`${week}:${day}:${index}`);
+    utils.storage.save('plannerTasks', state.tasks);
+    utils.showToast(`Task timer stopped: ${utils.formatTime(task.timeSpent)}`, 'success');
+    utils.playSound(sounds.stopTimer);
+    updateTasks();
+    updateDailySummary();
+};
+
+const markTaskCompleted = (week, day, index, status) => {
+    const task = state.tasks[week][day][index];
+    task.completed = status;
+    if (status === true && task.timerStatus !== 'stopped') {
+        stopTaskTimer(week, day, index);
+    }
+    if (status) {
+        utils.triggerConfetti();
+        utils.playSound(sounds.completeTask);
+    }
+    utils.storage.save('plannerTasks', state.tasks);
+    updateTasks();
+};
+
+const showDeleteConfirm = (week, day, index) => {
+    state.pendingDeleteModal = { week, day, index };
+    DOM.deleteConfirmModal.classList.remove('hidden');
+    DOM.deleteConfirmModal.querySelector('[aria-label="Cancel Deletion"]').focus();
+};
+
+const confirmDelete = () => {
+    if (!state.pendingDeleteModal) return;
+    const { week, day, index } = state.pendingDeleteModal;
+    const task = state.tasks[week][day][index];
+    if (task.timerStatus !== 'stopped') {
+        stopTaskTimer(week, day, index);
+    }
+    state.deletedTasks.push({ 
+        week, 
+        day, 
+        task: JSON.parse(JSON.stringify(task)), 
+        timestamp: Date.now() 
+    });
+    state.tasks[week][day].splice(index, 1);
+    utils.storage.save('plannerTasks', state.tasks);
+    utils.storage.save('plannerDeletedTasks', state.deletedTasks);
+    updateTasks();
+    updateDeletedTasksList();
+    DOM.deleteConfirmModal.classList.add('hidden');
+    state.pendingDeleteModal = null;
+    utils.playSound(sounds.deleteTask);
+    utils.showToast('Task moved to recycle bin', 'success');
+};
+
+const cancelDelete = () => {
+    DOM.deleteConfirmModal.classList.add('hidden');
+    state.pendingDeleteModal = null;
+};
+
+const updateDeletedTasksList = () => {
+    DOM.clearAllButton.disabled = state.deletedTasks.length === 0;
+    if (state.deletedTasks.length === 0) {
+        DOM.deletedTasksList.innerHTML = '<p class="text-gray-600">Recycle bin is empty</p>';
+        return;
+    }
+    DOM.deletedTasksList.innerHTML = state.deletedTasks.map((deletedTask, index) => {
+        const { week, day, task, timestamp } = deletedTask;
+        const deleteDate = new Date(timestamp).toLocaleString();
+        return `
+            <div class="task-card shadow-lg rounded-lg p-4 bg-gradient-to-r from-gray-100 to-gray-200 border border-gray-300">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="${task.subjectColor} font-bold">${task.subject}</span>
+                        </div>
+                        <p class="text-gray-700">${task.topic}</p>
+                        <p class="text-gray-500 text-sm">Deleted on: ${deleteDate}</p>
+                        <p class="text-gray-500 text-sm">Originally from: ${week.replace('Week', 'Week ')} - ${day}</p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="restoreTask(${index})" class="px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-300" aria-label="Restore Task">Restore</button>
+                        <button onclick="permanentlyDeleteTask(${index})" class="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300" aria-label="Permanently Delete Task">Delete</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+};
+
+const restoreTask = index => {
+    const deletedTask = state.deletedTasks[index];
+    const { week, day, task } = deletedTask;
+    state.tasks[week] ??= Object.fromEntries(state.baseDays.map(d => [d, []]));
+    state.tasks[week][day] ??= [];
+    state.tasks[week][day].push({ ...task, timerStatus: 'stopped', timerStart: null });
+    state.deletedTasks.splice(index, 1);
+    utils.storage.save('plannerTasks', state.tasks);
+    utils.storage.save('plannerDeletedTasks', state.deletedTasks);
+    updateTasks();
+    updateDeletedTasksList();
+    utils.playSound(sounds.restoreTask);
+    utils.showToast('Task restored successfully', 'success');
+};
+
+const permanentlyDeleteTask = index => {
+    state.deletedTasks.splice(index, 1);
+    utils.storage.save('plannerDeletedTasks', state.deletedTasks);
+    updateDeletedTasksList();
+    utils.playSound(sounds.deleteTask);
+    utils.showToast('Task permanently deleted', 'success');
+};
+
+const clearAllDeletedTasks = () => {
+    if (state.deletedTasks.length === 0) return;
+    state.deletedTasks = [];
+    utils.storage.save('plannerDeletedTasks', state.deletedTasks);
+    updateDeletedTasksList();
+    utils.playSound(sounds.deleteTask);
+    utils.showToast('All deleted tasks cleared', 'success');
+};
+
+const duplicateTaskToNextDay = (week, day, index) => {
+    const currentDayIndex = state.baseDays.indexOf(day);
+    let nextDay, nextWeek = week;
+    if (currentDayIndex + 1 < state.baseDays.length) {
+        nextDay = state.baseDays[currentDayIndex + 1];
+    } else {
+        nextDay = state.baseDays[0];
+        nextWeek = `Week${parseInt(week.replace('Week', '')) + 1}`;
+    }
+    const task = {
+        ...state.tasks[week][day][index],
+        completed: null,
+        timeSpent: 0,
+        accumulatedTime: 0,
+        timerStatus: 'stopped',
+        timerStart: null
+    };
+    state.tasks[nextWeek] ??= Object.fromEntries(state.baseDays.map(d => [d, []]));
+    state.tasks[nextWeek][nextDay].push(task);
+    utils.storage.save('plannerTasks', state.tasks);
+    updateTasks();
+    utils.showToast('Task duplicated to next day', 'success');
+    utils.playSound(sounds.addTask);
+};
+
+const showTaskDetails = (week, day, index) => {
+    const task = state.tasks[week][day][index];
+    DOM.taskDetailsContent.innerHTML = `
+        <p><span class="font-bold text-gray-800">Subject:</span> <span class="${task.subjectColor}">${task.subject}</span></p>
+        <p><span class="font-bold text-gray-800">Topic:</span> ${task.topic}</p>
+        <p><span class="font-bold text-gray-800">Details:</span> ${task.details}</p>
+        <p><span class="font-bold text-gray-800">Status:</span> ${task.completed === true ? 'Completed' : task.completed === false ? 'Pending' : 'Not Started'}</p>
+        <p><span class="font-bold text-gray-800">Time Spent:</span> ${utils.formatTime(getTaskTimeSpent(task))}</p>
+        <p><span class="font-bold text-gray-800">Week:</span> ${week.replace('Week', 'Week ')}</p>
+        <p><span class="font-bold text-gray-800">Day:</span> ${day}</p>
+    `;
+    DOM.taskDetailsModal.classList.remove('hidden');
+    DOM.taskDetailsModal.querySelector('[aria-label="Close Task Details"]').focus();
+};
+
+const closeTaskDetailsModal = () => {
+    DOM.taskDetailsModal.classList.add('hidden');
+};
+
+const updateProgressChart = () => {
+    if (!window.Chart || !DOM.progressChart) {
+        utils.showToast('Chart library or canvas not found', 'error');
+        return;
+    }
+    const timeframe = DOM.progressTimeframe.value;
+    let labels = [], completedData = [], pendingData = [], notStartedData = [];
+    if (timeframe === 'daily') {
+        labels = state.baseDays;
+        state.baseDays.forEach(day => {
+            const tasks = state.tasks[`Week${state.currentWeek}`]?.[day] || [];
+            const counts = tasks.reduce((acc, t) => ({
+                completed: acc.completed + (t.completed === true),
+                pending: acc.pending + (t.completed === false),
+                notStarted: acc.notStarted + (t.completed === null)
+            }), { completed: 0, pending: 0, notStarted: 0 });
+            completedData.push(counts.completed);
+            pendingData.push(counts.pending);
+            notStartedData.push(counts.notStarted);
+        });
+    } else if (timeframe === 'weekly') {
+        const totalWeeks = Math.min(Math.ceil(state.totalWeekdays / state.countedDays.length), 4);
+        for (let i = Math.max(1, state.currentWeek - 3); i <= state.currentWeek; i++) {
+            labels.push(`Week ${i}`);
+            const counts = state.baseDays.reduce((acc, day) => {
+                const tasks = state.tasks[`Week${i}`]?.[day] || [];
+                return tasks.reduce((a, t) => ({
+                    completed: a.completed + (t.completed === true),
+                    pending: a.pending + (t.completed === false),
+                    notStarted: a.notStarted + (t.completed === null)
+                }), acc);
+            }, { completed: 0, pending: 0, notStarted: 0 });
+            completedData.push(counts.completed);
+            pendingData.push(counts.pending);
+            notStartedData.push(counts.notStarted);
+        }
+    } else {
+        const { start, end } = utils.getMonthRange(new Date());
+        let current = new Date(start), monthCount = 0;
+        while (current <= end && monthCount++ < 12) {
+            labels.push(current.toLocaleString('en-US', { month: 'short', year: 'numeric' }));
+            const counts = Object.entries(state.tasks).reduce((acc, [week, days]) => {
+                return Object.entries(days).reduce((a, [day, tasks]) => {
+                    const date = utils.calculateDate(parseInt(week.replace('Week', '')), day);
+                    if (date.getMonth() === current.getMonth() && date.getFullYear() === current.getFullYear()) {
+                        return tasks.reduce((b, t) => ({
+                            completed: b.completed + (t.completed === true),
+                            pending: b.pending + (t.completed === false),
+                            notStarted: b.notStarted + (t.completed === null)
+                        }), a);
+                    }
+                    return a;
+                }, acc);
+            }, { completed: 0, pending: 0, notStarted: 0 });
+            completedData.push(counts.completed);
+            pendingData.push(counts.pending);
+            notStartedData.push(counts.notStarted);
+            current.setMonth(current.getMonth() + 1);
+        }
+    }
+    if (state.chart) state.chart.destroy();
+    const isDark = document.body.dataset.theme === 'dark';
+    state.chart = new Chart(DOM.progressChart, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [
+                { label: 'Completed', data: completedData, backgroundColor: '#34D399' },
+                { label: 'Pending', data: pendingData, backgroundColor: '#F87171' },
+                { label: 'Not Started', data: notStartedData, backgroundColor: '#E5E7EB' }
+            ]
+        },
+        options: {
+            plugins: {
+                legend: { labels: { color: isDark ? '#e5e7eb' : '#1f2937' } },
+                title: { display: true, text: `${timeframe[0].toUpperCase() + timeframe.slice(1)} Task Progress`, color: isDark ? '#e5e7eb' : '#1f2937', font: { size: 16 } }
+            },
+            scales: {
+                x: { stacked: true, ticks: { color: isDark ? '#e5e7eb' : '#1f2937' }, grid: { display: false } },
+                y: { stacked: true, beginAtZero: true, ticks: { color: isDark ? '#e5e7eb' : '#1f2937' }, grid: { color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' } }
+            }
+        }
+    });
+};
+
+const openProgressChartModal = () => {
+    DOM.progressChartModal.classList.remove('hidden');
+    updateProgressChart();
+    DOM.progressChartModal.querySelector('[aria-label="Close Progress Chart"]').focus();
+};
+
+const closeProgressChartModal = () => {
+    DOM.progressChartModal.classList.add('hidden');
+    if (state.chart) {
+        state.chart.destroy();
+        state.chart = null;
+    }
+};
+
+const handleDragStart = (week, day, index, el) => {
+    state.draggedIndex = index;
+    el.classList.add('opacity-50');
+};
+
+const handleDragEnd = el => {
+    el.classList.remove('opacity-50');
+    state.draggedIndex = null;
+};
+
+const handleDrop = (week, day, index) => {
+    if (state.draggedIndex === null || state.draggedIndex === index) return;
+    const task = state.tasks[week][day][state.draggedIndex];
+    if (task.timerStatus === 'running') {
+        task.accumulatedTime += Math.floor((Date.now() - task.timerStart) / 1000);
+        task.timerStart = Date.now();
+    }
+    state.tasks[week][day].splice(state.draggedIndex, 1);
+    state.tasks[week][day].splice(index, 0, task);
+    utils.storage.save('plannerTasks', state.tasks);
+    updateTasks();
+};
+
+const handleTaskClick = (week, day, index, e) => {
+    if (e.target.closest('button') || state.draggedIndex !== null) return;
+    const url = utils.getFirstUrlFromText(state.tasks[week][day][index].details);
+    if (url) window.open(url, '_blank');
+};
+
+const handleTaskDoubleClick = (week, day, index) => {
+    state.editingTask = { week, day, index };
+    const { subject, topic, details } = state.tasks[week][day][index];
+    DOM.taskSubject.value = subject;
+    DOM.taskTopic.value = topic;
+    DOM.taskDetails.value = details;
+    toggleAddTaskForm(false);
+};
+
+let searchTimeout;
+const debouncedSearch = () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        DOM.searchClear.classList.toggle('visible', DOM.taskSearch.value.trim().length > 0);
+        updateTasks();
+    }, 300);
+};
+
+const clearSearch = () => {
+    DOM.taskSearch.value = '';
+    DOM.searchClear.classList.remove('visible');
+    DOM.taskSearch.focus();
+    updateTasks();
+};
+
+const updateTaskStats = () => {
+    const week = `Week${state.currentWeek}`;
+    const tasks = state.tasks[week]?.[state.currentDay] || [];
+    const total = tasks.length;
+    const completed = tasks.filter(t => t.completed === true).length;
+    const completion = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+    DOM.taskCount.textContent = `Task: ${completed}/${total}`;
+    DOM.totalTasks.textContent = total;
+    DOM.completedTasks.textContent = completed;
+    DOM.completionPercentage.textContent = `${completion}%`;
+    DOM.progressBarFill.style.width = `${completion}%`;
+};
+
+const updateTasks = () => {
+    const week = `Week${state.currentWeek}`;
+    const tasks = state.tasks[week]?.[state.currentDay] || [];
+    const query = DOM.taskSearch.value.trim().toLowerCase();
+    const filteredTasks = query ? tasks.map((t, i) => ({ task: t, i })).filter(({ task }) => 
+        task.subject.toLowerCase().includes(query) || task.topic.toLowerCase().includes(query)
+    ) : tasks.map((t, i) => ({ task: t, i }));
+    
+   DOM.taskList.innerHTML = filteredTasks.map(({ task, i }) => {
+    const bg = task.completed === true ? 'bg-gradient-to-r from-green-200 to-teal-200' :
+               task.completed === false ? 'bg-gradient-to-r from-red-200 to-pink-200' :
+               'bg-gradient-to-r from-white to-gray-100';
+    const hasUrl = utils.getFirstUrlFromText(task.details);
+    return `
+        <div draggable="true" class="task-card shadow-lg rounded-lg p-6 flex flex-col justify-between items-center transition-all duration-300 ${bg} border border-gray-200" 
+            data-task-id="${week}-${state.currentDay}-${i}"
+            ondragstart="handleDragStart('${week}', '${state.currentDay}', ${i}, this)"
+            ondragover="event.preventDefault()"
+            ondragend="handleDragEnd(this)"
+            ondrop="handleDrop('${week}', '${state.currentDay}', ${i})"
+            onclick="handleTaskClick('${week}', '${state.currentDay}', ${i}, event)"
+            ondblclick="handleTaskDoubleClick('${week}', '${state.currentDay}', ${i})">
+            <div class="flex justify-between items-start w-full">
+                <div class="flex-1">
+                    <div class="flex items-center space-x-2">
+                        <span class="${task.subjectColor} font-bold">${task.subject}</span>
+                        <span class="text-gray-600">${task.topic}</span>
+                    </div>
+                    <p class="text-gray-500 text-sm">${task.details}</p>
+                    <p class="task-timer text-gray-700">Time Spent: ${utils.formatTime(getTaskTimeSpent(task))}</p>
+                </div>
+                <div class="flex space-x-2">
+                    <button onclick="markTaskCompleted('${week}', '${state.currentDay}', ${i}, true)" class="px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-300" aria-label="Mark Task Completed">✔</button>
+                    <button onclick="markTaskCompleted('${week}', '${state.currentDay}', ${i}, false)" class="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300" aria-label="Mark Task Pending">✘</button>
+                    <button onclick="markTaskCompleted('${week}', '${state.currentDay}', ${i}, null)" class="px-3 py-1 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition duration-300" aria-label="Mark Task Not Started">○</button>
+                    <button onclick="${task.timerStatus === 'running' ? `pauseTaskTimer('${week}', '${state.currentDay}', ${i})` : `startTaskTimer('${week}', '${state.currentDay}', ${i})`}" class="px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-300" aria-label="${task.timerStatus === 'running' ? 'Pause' : 'Start'} Timer">${task.timerStatus === 'running' ? '⏸' : '▶'}</button>
+                    <button onclick="stopTaskTimer('${week}', '${state.currentDay}', ${i})" class="px-3 py-1 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-300" aria-label="Stop Timer">⏹</button>
+                    <button onclick="editTask('${week}', '${state.currentDay}', ${i})" class="px-3 py-1 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition duration-300" aria-label="Edit Task">✏</button>
+                    <button onclick="showDeleteConfirm('${week}', '${state.currentDay}', ${i})" class="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300" aria-label="Delete Task">🗑</button>
+                    <button onclick="duplicateTaskToNextDay('${week}', '${state.currentDay}', ${i})" class="px-3 py-1 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition duration-300" aria-label="Duplicate Task to Next Day">↪</button>
+                    <button onclick="showTaskDetails('${week}', '${state.currentDay}', ${i})" class="px-3 py-1 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition duration-300" aria-label="View Task Details">ℹ</button>
+                </div>
+            </div>
+        </div>
+    `;
+}).join('');
+
+    updateTaskStats();
+    updateDailySummary();
+};
+
+// Initialize voice input
+const initializeVoiceInput = () => {
+    if (!('webkitSpeechRecognition' in window)) {
+        DOM.voiceSubjectButton.style.display = 'none';
+        DOM.voiceTopicButton.style.display = 'none';
+        return;
+    }
+    const recognition = new webkitSpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    const setupVoiceInput = (button, input) => {
+        button.addEventListener('click', () => {
+            recognition.onresult = event => {
+                input.value = event.results[0][0].transcript;
+                input.dispatchEvent(new Event('input'));
+            };
+            recognition.start();
+        });
+    };
+
+    setupVoiceInput(DOM.voiceSubjectButton, DOM.taskSubject);
+    setupVoiceInput(DOM.voiceTopicButton, DOM.taskTopic);
+};
+
+// Initialize the app
+const initializeApp = () => {
+    loadData();
+    calculateCurrentWeekAndDay();
+    updateWeeks();
+    updateDays();
+    updateDateDisplay();
+    updateTimeDisplay();
+    updateTasks();
+    updateDeletedTasksList();
+    initializeVoiceInput();
+};
+
+// Run initialization
+initializeApp();
+    </script>
 </html>
