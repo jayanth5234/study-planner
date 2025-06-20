@@ -1,4 +1,6 @@
 
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -740,7 +742,13 @@ const loadData = () => {
     DOM.dayCheckboxes.forEach(cb => cb.checked = state.countedDays.includes(cb.value));
     state.tasks = utils.storage.load('plannerTasks') || initializeTasks();
     state.deletedTasks = utils.storage.load('plannerDeletedTasks') || [];
-    state.dailyTimeRecords = utils.storage.load('dailyTimeRecords') || {};
+    // Handle backward compatibility for dailyTimeRecords
+    const rawRecords = utils.storage.load('dailyTimeRecords') || {};
+    state.dailyTimeRecords = {};
+    Object.entries(rawRecords).forEach(([key, value]) => {
+        state.dailyTimeRecords[key] = typeof value === 'number' ? { time: value, manualEdit: false } : value;
+    });
+    utils.storage.save('dailyTimeRecords', state.dailyTimeRecords);
 };
 
 const initializeTasks = () => {
@@ -856,14 +864,31 @@ const saveDailyTime = () => {
 const updateDailySummary = () => {
     const week = `Week${state.currentWeek}`;
     const tasks = state.tasks[week]?.[state.currentDay] || [];
-    const totalTime = tasks.reduce((sum, task) => sum + getTaskTimeSpent(task), 0);
     const date = utils.calculateDate(state.currentWeek, state.currentDay);
     const dateKey = utils.getDateKey(date);
-    state.dailyTimeRecords[dateKey] = state.dailyTimeRecords[dateKey] || totalTime;
-    DOM.dailyTimeTotal.textContent = utils.formatTime(state.dailyTimeRecords[dateKey]);
     
-    const completed = tasks.filter(t => t.completed === true).length;
-    const pending = tasks.filter(t => t.completed === false).length;
+    // Always calculate total time from task timers for real-time updates
+    let totalTime = tasks.reduce((sum, task) => sum + (getTaskTimeSpent(task) || 0), 0);
+    
+    // Use stored value from dailyTimeRecords only if no timers are running and manual edit exists
+    const hasRunningTimers = tasks.some(task => task.timerStatus === 'running');
+    if (!hasRunningTimers && state.dailyTimeRecords[dateKey]?.manualEdit) {
+        totalTime = state.dailyTimeRecords[dateKey].time;
+    } else if (!hasRunningTimers && state.dailyTimeRecords[dateKey]?.time !== undefined) {
+        totalTime = state.dailyTimeRecords[dateKey].time;
+    } else {
+        // Update dailyTimeRecords with calculated time if no manual edit and no timers running
+        state.dailyTimeRecords[dateKey] = {
+            time: totalTime,
+            manualEdit: false
+        };
+        utils.storage.save('dailyTimeRecords', state.dailyTimeRecords); // Ensure save on update
+    }
+    
+    DOM.dailyTimeTotal.textContent = utils.formatTime(totalTime || 0);
+    
+    const completed = tasks.filter(task => task.completed === true).length;
+    const pending = tasks.filter(task => task.completed === false).length;
     const total = tasks.length;
     
     DOM.completedTasksCount.textContent = completed;
@@ -1002,12 +1027,13 @@ const saveEditedTask = () => {
     utils.playSound(sounds.addTask);
 };
 
-const getTaskTimeSpent = task => {
+const getTaskTimeSpent = (task) => {
+    if (!task) return 0;
     let totalTime = task.accumulatedTime || 0;
     if (task.timerStatus === 'running' && task.timerStart) {
         totalTime += Math.floor((Date.now() - task.timerStart) / 1000);
     }
-    return totalTime;
+    return isNaN(totalTime) ? 0 : totalTime;
 };
 
 let timerFrame = null;
