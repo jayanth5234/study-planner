@@ -1,6 +1,3 @@
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,6 +9,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
     <style>
         :root {
             --bg-gradient: linear-gradient(45deg, #c3dafe, #e9d5ff, #c3dafe);
@@ -586,6 +586,26 @@
     </button>
 </body>
 <script>
+  
+  // Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+let currentUser = null;
+
+// Listen for auth state changes
+firebase.auth().onAuthStateChanged(user => {
+    currentUser = user;
+    if (user) {
+        initializeApp();
+    } else {
+        // Prompt user to sign in
+        firebase.auth().signInAnonymously().catch(error => {
+            console.error('Anonymous auth failed:', error);
+            utils.showToast('Failed to initialize app', 'error');
+        });
+    }
+});
+
 const state = {
     startDate: new Date('2025-06-01'),
     currentWeek: 1,
@@ -671,19 +691,25 @@ const sounds = {
 
 const utils = {
     storage: {
-        save: (key, value) => localStorage.setItem(key, JSON.stringify(value)),
-        load: key => JSON.parse(localStorage.getItem(key) || '{}')
-    },
-    getDayOfWeek: date => state.baseDays[date.getDay() === 0 ? 6 : date.getDay() - 1],
-    countWeekdaysBetween: (start, end) => {
-        let count = 0, current = new Date(start);
-        current.setHours(0, 0, 0, 0);
-        end.setHours(0, 0, 0, 0);
-        while (current <= end) {
-            if (state.countedDays.includes(utils.getDayOfWeek(current))) count++;
-            current.setDate(current.getDate() + 1);
+        save: async (key, value) => {
+            if (!currentUser) return;
+            try {
+                await db.collection('users').doc(currentUser.uid).set({ [key]: value }, { merge: true });
+            } catch (error) {
+                console.error(`Error saving ${key}:`, error);
+                utils.showToast(`Failed to save ${key}`, 'error');
+            }
+        },
+        load: async key => {
+            if (!currentUser) return null;
+            try {
+                const doc = await db.collection('users').doc(currentUser.uid).get();
+                return doc.exists ? doc.data()[key] || null : null;
+            } catch (error) {
+                console.error(`Error loading ${key}:`, error);
+                return null;
+            }
         }
-        return count;
     },
     calculateDate: (week, day) => {
         const date = new Date(state.startDate);
@@ -731,24 +757,27 @@ const utils = {
     }
 };
 
-const loadData = () => {
-    state.headerPhotoUrl = utils.storage.load('plannerHeaderPhoto') || state.headerPhotoUrl;
+const loadData = async () => {
+    if (!currentUser) return;
+    state.headerPhotoUrl = (await utils.storage.load('plannerHeaderPhoto')) || state.headerPhotoUrl;
     DOM.headerPhoto.src = DOM.headerPhotoInput.value = state.headerPhotoUrl;
-    state.startDate = new Date(utils.storage.load('plannerStartDate') || state.startDate);
+    const savedStartDate = await utils.storage.load('plannerStartDate');
+    state.startDate = savedStartDate ? new Date(savedStartDate) : state.startDate;
     DOM.startDateInput.value = state.startDate.toISOString().split('T')[0];
-    state.totalWeekdays = parseInt(utils.storage.load('plannerTotalWeekdays')) || state.totalWeekdays;
+    state.totalWeekdays = (await utils.storage.load('plannerTotalWeekdays')) || state.totalWeekdays;
     DOM.totalDaysInput.value = state.totalWeekdays;
-    state.countedDays = utils.storage.load('plannerCountedDays') || state.countedDays;
+    state.countedDays = (await utils.storage.load('plannerCountedDays')) || state.countedDays;
     DOM.dayCheckboxes.forEach(cb => cb.checked = state.countedDays.includes(cb.value));
-    state.tasks = utils.storage.load('plannerTasks') || initializeTasks();
-    state.deletedTasks = utils.storage.load('plannerDeletedTasks') || [];
-    // Handle backward compatibility for dailyTimeRecords
-    const rawRecords = utils.storage.load('dailyTimeRecords') || {};
+    state.tasks = (await utils.storage.load('plannerTasks')) || initializeTasks();
+    state.deletedTasks = (await utils.storage.load('plannerDeletedTasks')) || [];
+    const rawRecords = (await utils.storage.load('dailyTimeRecords')) || {};
     state.dailyTimeRecords = {};
     Object.entries(rawRecords).forEach(([key, value]) => {
         state.dailyTimeRecords[key] = typeof value === 'number' ? { time: value, manualEdit: false } : value;
     });
-    utils.storage.save('dailyTimeRecords', state.dailyTimeRecords);
+    await utils.storage.save('dailyTimeRecords', state.dailyTimeRecords);
+    updateTasks();
+    updateDeletedTasksList();
 };
 
 const initializeTasks = () => {
@@ -1467,8 +1496,8 @@ const updateTasks = () => {
     updateDailySummary();
 };
 
-const initializeApp = () => {
-    loadData();
+const initializeApp = async () => {
+    await loadData();
     updateWeeks();
     calculateCurrentWeekAndDay();
     updateDateDisplay();
