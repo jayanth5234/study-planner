@@ -1,7 +1,4 @@
-
-
-
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -12,7 +9,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js"></script>
     <style>
+    
         :root {
             --bg-gradient: linear-gradient(45deg, #c3dafe, #e9d5ff, #c3dafe);
             --text-color: #1f2937;
@@ -586,6 +587,30 @@
     </button>
 </body>
 <script>
+ const firebaseConfig = {
+    apiKey: "AIzaSyBddeerv8yDFPsDUCnkBLW8ppy6kxi9RsU",
+    authDomain: "study-planner-5234.firebaseapp.com",
+    projectId: "study-planner-5234",
+    storageBucket: "study-planner-5234.firebasestorage.app",
+    messagingSenderId: "786807819979",
+    appId: "1:786807819979:web:692d2eb7b99587758ed54e",
+    measurementId: "G-CVJ0MG6BT2"
+  };
+   const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  
+  firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+        // User is signed in, load data
+        initializeApp();
+    } else {
+        // Prompt for login
+        firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())
+            .then(() => initializeApp())
+            .catch(error => utils.showToast(`Login failed: ${error.message}`, 'error'));
+    }
+});
+  
 const state = {
     startDate: new Date('2025-06-01'),
     currentWeek: 1,
@@ -671,84 +696,46 @@ const sounds = {
 
 const utils = {
     storage: {
-        save: (key, value) => localStorage.setItem(key, JSON.stringify(value)),
-        load: key => JSON.parse(localStorage.getItem(key) || '{}')
-    },
-    getDayOfWeek: date => state.baseDays[date.getDay() === 0 ? 6 : date.getDay() - 1],
-    countWeekdaysBetween: (start, end) => {
-        let count = 0, current = new Date(start);
-        current.setHours(0, 0, 0, 0);
-        end.setHours(0, 0, 0, 0);
-        while (current <= end) {
-            if (state.countedDays.includes(utils.getDayOfWeek(current))) count++;
-            current.setDate(current.getDate() + 1);
+        save: async (key, value) => {
+            try {
+                await db.collection('plannerData').doc(key).set(value);
+                console.log(`Saved ${key} to Firestore`);
+            } catch (error) {
+                console.error('Error saving to Firestore:', error);
+                utils.showToast('Failed to save data', 'error');
+            }
+        },
+        load: async (key) => {
+            try {
+                const doc = await db.collection('plannerData').doc(key).get();
+                return doc.exists ? doc.data() : {};
+            } catch (error) {
+                console.error('Error loading from Firestore:', error);
+                return {};
+            }
         }
-        return count;
     },
-    calculateDate: (week, day) => {
-        const date = new Date(state.startDate);
-        date.setDate(date.getDate() + (week - 1) * 7 + state.baseDays.indexOf(day));
-        return date;
-    },
-    getFirstUrlFromText: text => {
-        const match = text.match(/(https?:\/\/[^\s]+)|(www\.[^\s]+)|((?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?:\/[^\s]*)?)/);
-        return match ? match[0].startsWith('http') ? match[0] : 'https://' + match[0] : null;
-    },
-    triggerConfetti: () => confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }),
-    getMonthRange: date => ({ start: new Date(date.getFullYear(), date.getMonth(), 1), end: new Date(date.getFullYear(), date.getMonth() + 1, 0) }),
-    playSound: sound => sound.play().catch(() => {}),
-    showToast: (msg, type = 'error') => {
-        DOM.toast.className = `fixed top-4 right-4 bg-${type === 'error' ? 'red' : 'green'}-600 text-white p-4 rounded-lg shadow-lg`;
-        DOM.toastMessage.textContent = msg;
-        DOM.toast.classList.remove('hidden');
-        setTimeout(() => utils.hideToast(), 3000);
-    },
-    hideToast: () => DOM.toast.classList.add('hidden'),
-    formatTime: seconds => {
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        const secs = seconds % 60;
-        return `${hours}h ${minutes}m ${secs}s`;
-    },
-    parseTimeInput: input => {
-        const regex = /^(\d+h)?\s*(\d+m)?\s*(\d+s)?$/;
-        const match = input.trim().match(regex);
-        if (!match) return null;
-        let seconds = 0;
-        if (match[1]) seconds += parseInt(match[1]) * 3600;
-        if (match[2]) seconds += parseInt(match[2]) * 60;
-        if (match[3]) seconds += parseInt(match[3]);
-        return seconds;
-    },
-    getDateKey: date => date.toISOString().split('T')[0],
-    validateUrl: url => {
-        try {
-            new URL(url);
-            return true;
-        } catch {
-            return false;
-        }
-    }
+    // ... keep other utilities (getDayOfWeek, countWeekdaysBetween, etc.) unchanged
 };
 
-const loadData = () => {
-    state.headerPhotoUrl = utils.storage.load('plannerHeaderPhoto') || state.headerPhotoUrl;
+const loadData = async () => {
+    state.headerPhotoUrl = (await utils.storage.load('plannerHeaderPhoto')).url || state.headerPhotoUrl;
     DOM.headerPhoto.src = DOM.headerPhotoInput.value = state.headerPhotoUrl;
-    state.startDate = new Date(utils.storage.load('plannerStartDate') || state.startDate);
+    state.startDate = new Date((await utils.storage.load('plannerStartDate')).date || state.startDate);
     DOM.startDateInput.value = state.startDate.toISOString().split('T')[0];
-    state.totalWeekdays = parseInt(utils.storage.load('plannerTotalWeekdays')) || state.totalWeekdays;
+    state.totalWeekdays = (await utils.storage.load('plannerTotalWeekdays')).days || state.totalWeekdays;
     DOM.totalDaysInput.value = state.totalWeekdays;
-    state.countedDays = utils.storage.load('plannerCountedDays') || state.countedDays;
+    state.countedDays = (await utils.storage.load('plannerCountedDays')).days || state.countedDays;
     DOM.dayCheckboxes.forEach(cb => cb.checked = state.countedDays.includes(cb.value));
-    state.tasks = utils.storage.load('plannerTasks') || initializeTasks();
-    state.deletedTasks = utils.storage.load('plannerDeletedTasks') || [];
-    // Handle backward compatibility for dailyTimeRecords
-    const rawRecords = utils.storage.load('dailyTimeRecords') || {};
-    state.dailyTimeRecords = {};
-    Object.entries(rawRecords).forEach(([key, value]) => {
+    state.tasks = (await utils.storage.load('plannerTasks')).tasks || initializeTasks();
+    state.deletedTasks = (await utils.storage.load('plannerDeletedTasks')).tasks || [];
+    state.dailyTimeRecords = (await utils.storage.load('dailyTimeRecords')).records || {};
+    // Ensure dailyTimeRecords compatibility
+    Object.entries(state.dailyTimeRecords).forEach(([key, value]) => {
         state.dailyTimeRecords[key] = typeof value === 'number' ? { time: value, manualEdit: false } : value;
     });
-    utils.storage.save('dailyTimeRecords', state.dailyTimeRecords);
+    await utils.storage.save('dailyTimeRecords', { records: state.dailyTimeRecords });
+    initializeApp(); // Call to refresh UI after loading
 };
 
 const initializeTasks = () => {
@@ -760,25 +747,25 @@ const initializeTasks = () => {
     return tasks;
 };
 
-const saveSettings = () => {
+const saveSettings = async () => {
     const newStartDate = new Date(DOM.startDateInput.value);
     if (isNaN(newStartDate.getTime())) return utils.showToast('Invalid start date', 'error');
     state.startDate = newStartDate;
-    utils.storage.save('plannerStartDate', state.startDate.toISOString());
+    await utils.storage.save('plannerStartDate', { date: state.startDate.toISOString() });
 
     const newTotalWeekdays = parseInt(DOM.totalDaysInput.value);
     if (newTotalWeekdays < 1) return utils.showToast('Total days must be at least 1', 'error');
     state.totalWeekdays = newTotalWeekdays;
-    utils.storage.save('plannerTotalWeekdays', state.totalWeekdays);
+    await utils.storage.save('plannerTotalWeekdays', { days: state.totalWeekdays });
 
     state.countedDays = Array.from(DOM.dayCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
     if (!state.countedDays.length) return utils.showToast('Select at least one day', 'error');
-    utils.storage.save('plannerCountedDays', state.countedDays);
+    await utils.storage.save('plannerCountedDays', { days: state.countedDays });
 
     const newHeaderPhotoUrl = DOM.headerPhotoInput.value.trim();
     if (newHeaderPhotoUrl && utils.validateUrl(newHeaderPhotoUrl)) {
         state.headerPhotoUrl = DOM.headerPhoto.src = newHeaderPhotoUrl;
-        utils.storage.save('plannerHeaderPhoto', newHeaderPhotoUrl);
+        await utils.storage.save('plannerHeaderPhoto', { url: newHeaderPhotoUrl });
     } else if (newHeaderPhotoUrl) {
         utils.showToast('Invalid photo URL', 'error');
     }
@@ -973,9 +960,11 @@ const toggleAddTaskForm = (isAdd = true) => {
 
 const cancelTaskForm = () => toggleAddTaskForm(false);
 
-const submitTaskForm = () => state.isAdd ? addTask() : saveEditedTask();
+const submitTaskForm = async () => {
+    state.isAdd ? addTask() : saveEditedTask();
+};
 
-const addTask = () => {
+const addTask = async () => {
     const subject = DOM.taskSubject.value.trim().toUpperCase();
     const topic = DOM.taskTopic.value.trim();
     const details = DOM.taskDetails.value.trim() || 'No details provided';
@@ -992,10 +981,11 @@ const addTask = () => {
         timerStart: null,
         accumulatedTime: 0
     });
-    utils.storage.save('plannerTasks', state.tasks);
+    await utils.storage.save('plannerTasks', { tasks: state.tasks });
     updateTasks();
     toggleAddTaskForm(false);
     utils.playSound(sounds.addTask);
+    utils.triggerConfetti();
 };
 
 const editTask = (week, day, index) => {
@@ -1110,7 +1100,7 @@ const markTaskCompleted = (week, day, index, status) => {
         utils.triggerConfetti();
         utils.playSound(sounds.completeTask);
     }
-    utils.storage.save('plannerTasks', state.tasks);
+     await utils.storage.save('plannerTasks', state.tasks);
     updateTasks();
 };
 
@@ -1135,7 +1125,7 @@ const confirmDelete = () => {
     });
     state.tasks[week][day].splice(index, 1);
     utils.storage.save('plannerTasks', state.tasks);
-    utils.storage.save('plannerDeletedTasks', state.deletedTasks);
+   await utils.storage.save('plannerDeletedTasks', state.deletedTasks);
     updateTasks();
     updateDeletedTasksList();
     DOM.deleteConfirmModal.classList.add('hidden');
@@ -1187,7 +1177,7 @@ const restoreTask = index => {
     state.tasks[week][day] ??= [];
     state.tasks[week][day].push({ ...task, timerStatus: 'stopped', timerStart: null });
     state.deletedTasks.splice(index, 1);
-    utils.storage.save('plannerTasks', state.tasks);
+    await utils.storage.save('plannerTasks', state.tasks);
     utils.storage.save('plannerDeletedTasks', state.deletedTasks);
     updateTasks();
     updateDeletedTasksList();
@@ -1197,7 +1187,7 @@ const restoreTask = index => {
 
 const permanentlyDeleteTask = index => {
     state.deletedTasks.splice(index, 1);
-    utils.storage.save('plannerDeletedTasks', state.deletedTasks);
+    await utils.storage.save('plannerDeletedTasks', state.deletedTasks);
     updateDeletedTasksList();
     utils.playSound(sounds.deleteTask);
     utils.showToast('Task permanently deleted', 'success');
@@ -1206,7 +1196,7 @@ const permanentlyDeleteTask = index => {
 const clearAllDeletedTasks = () => {
     if (state.deletedTasks.length === 0) return;
     state.deletedTasks = [];
-    utils.storage.save('plannerDeletedTasks', state.deletedTasks);
+    await utils.storage.save('plannerDeletedTasks', state.deletedTasks);
     updateDeletedTasksList();
     utils.playSound(sounds.deleteTask);
     utils.showToast('All deleted tasks cleared', 'success');
@@ -1230,7 +1220,7 @@ const duplicateTaskToNextDay = (week, day, index) => {
     };
     state.tasks[nextWeek] ??= Object.fromEntries(state.baseDays.map(d => [d, []]));
     state.tasks[nextWeek][nextDay].push(task);
-    utils.storage.save('plannerTasks', state.tasks);
+    await utils.storage.save('plannerTasks', state.tasks);
     updateTasks();
     utils.showToast('Task duplicated to next day', 'success');
     utils.playSound(sounds.addTask);
@@ -1468,13 +1458,22 @@ const updateTasks = () => {
 };
 
 const initializeApp = () => {
-    loadData();
-    updateWeeks();
-    calculateCurrentWeekAndDay();
-    updateDateDisplay();
-    updateTimeDisplay();
-    updateTasks();
-    updateDeletedTasksList();
+    loadData().then(() => {
+        updateWeeks();
+        calculateCurrentWeekAndDay();
+        updateDateDisplay();
+        updateTimeDisplay();
+        updateTasks();
+        updateDeletedTasksList();
+        // Real-time listener for tasks
+        db.collection('plannerData').doc('plannerTasks').onSnapshot((doc) => {
+            if (doc.exists) {
+                state.tasks = doc.data().tasks || initializeTasks();
+                updateTasks();
+                updateDeletedTasksList();
+            }
+        });
+    });
 };
 
 
