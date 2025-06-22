@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body style="background: linear-gradient(45deg, #c3dafe, #e9d5ff, #c3dafe); background-size: 200% 200%; animation: gradientAnimation 15s ease infinite; color: #1f2937; transition: background 0.5s ease, color 0.3s ease; font-family: 'Poppins', sans-serif;" class="min-h-screen flex justify-center">
+    <style>
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease;
+        }
+        .neumorphic {
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.1), -5px -5px 15px rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+        .task-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .task-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            filter: brightness(1.05);
+        }
+        .modal-backdrop {
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .modal-content {
+            animation: slideUp 0.5s ease forwards;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .floating-label-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        .floating-label {
+            position: absolute;
+            top: 0;
+            left: 0.75rem;
+            transform: translateY(0.75rem);
+            transition: all 0.2s ease-out;
+            color: #6B7280;
+            pointer-events: none;
+        }
+        .floating-input:focus + .floating-label,
+        .floating-input:not(:placeholder-shown) + .floating-label {
+            transform: translateY(-0.5rem) scale(0.85);
+            color: #4F46E5;
+            background: white;
+            padding: 0 0.25rem;
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 9999px;
+            overflow: hidden;
+            height: 1rem;
+            margin-top: 0.5rem;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(to right, #4f46e5, #a855f7);
+            transition: width 0.5s ease-in-out;
+        }
+        .header-photo {
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: border 0.3s ease;
+        }
+        .tooltip {
+            visibility: hidden;
+            background-color: #1f2937;
+            color: #ffffff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        button:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        .custom-checkbox {
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #4f46e5;
+            border-radius: 0.25rem;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .custom-checkbox:checked {
+            background-color: #4f46e5;
+            border-color: #4f46e5;
+        }
+        .custom-checkbox:checked::after {
+            content: '\2713';
+            color: white;
+            font-size: 0.875rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+        .search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        .search-clear {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: #6B7280;
+            cursor: pointer;
+            font-size: 1.25rem;
+            display: none;
+            padding: 0;
+            line-height: 1;
+        }
+        .search-clear.visible {
+            display: block;
+        }
+        .search-clear:hover {
+            color: #4F46E5;
+        }
+        .floating-button {
+            position: fixed !important;
+            bottom: 20px !important;
+            z-index: 1000 !important;
+            background: linear-gradient(to right, #4f46e5, #a855f7);
+            border-radius: 50% !important;
+            width: 50px !important;
+            height: 50px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+        }
+        .floating-add-task {
+            right: 20px !important;
+        }
+        .floating-chart-button {
+            left: 20px !important;
+        }
+        .time-edit-input {
+            width: 100%;
+            border: 2px solid #4f46e5;
+            border-radius: 0.25rem;
+            padding: 0.25rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        /* Dark theme styles */
+        [data-theme="dark"] {
+            background: linear-gradient(45deg, #1e3a8a, #5b21b6, #1e3a8a);
+            color: #e5e7eb;
+        }
+        [data-theme="dark"] .glassmorphism {
+            background: rgba(31, 41, 55, 0.5);
+            border-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        [data-theme="dark"] .neumorphic {
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3), -5px -5px 15px rgba(255, 255, 255, 0.05);
+        }
+        [data-theme="dark"] .floating-input:focus + .floating-label,
+        [data-theme="dark"] .floating-input:not(:placeholder-shown) + .floating-label {
+            background: #1f2937;
+            color: #a855f7;
+        }
+        [data-theme="dark"] .progress-bar {
+            background-color: #374151;
+        }
+        [data-theme="dark"] .tooltip {
+            background-color: #374151;
+        }
+        [data-theme="dark"] .custom-checkbox {
+            border-color: #a855f7;
+            background-color: #1f2937;
+        }
+        [data-theme="dark"] .custom-checkbox:checked {
+            background-color: #a855f7;
+            border-color: #a855f7;
+        }
+        [data-theme="dark"] .search-clear:hover {
+            color: #a855f7;
+        }
+        [data-theme="dark"] .floating-button {
+            background: linear-gradient(to right, #3b82f6, #d946ef);
+        }
+        [data-theme="dark"] .time-edit-input {
+            border-color: #a855f7;
+            background-color: #1f2937;
+            color: #e5e7eb;
+        }
+    </style>
+
+    <div class="max-w-5xl w-full mx-4 glassmorphism rounded-3xl p-8 my-8">
+        <!-- Header Section -->
+        <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-2xl rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 border border-indigo-200">
+            <img id="headerPhoto" src="https://via.placeholder.com/80" alt="Header Photo" class="w-20 h-20 rounded-full header-photo shadow-lg">
+            <div class="flex flex-col items-center md:items-start space-y-2">
+                <h1 class="text-2xl md:text-3xl font-['Playfair_Display'] font-bold text-white drop-shadow-md">SSC CGL Study Planner</h1>
+            </div>
+            <div class="flex flex-col items-center md:items-end space-y-2">
+                <span class="text-sm md:text-base font-['Playfair_Display'] font-semibold text-yellow-200 drop-shadow-md">TARGET: ASO</span>
+                <div class="flex items-center space-x-2">
+                    <button onclick="toggleTheme()" class="neumorphic rounded-full p-2 text-white relative" aria-label="Toggle Theme">
+                        <i class="fas fa-lightbulb text-xl"></i><span class="tooltip">Toggle Dark Mode</span>
+                    </button>
+                    <button onclick="toggleEditForm()" class="neumorphic rounded-full p-2 text-white relative" aria-label="Open Settings">
+                        <i class="fas fa-cog text-xl"></i><span class="tooltip">Open Settings</span>
+                    </button>
+                </div>
+                <div id="editForm" class="hidden mt-2 bg-indigo-600 p-4 rounded-lg shadow-lg">
+                    <div class="space-y-4">
+                        <div class="floating-label-group">
+                            <input id="totalDaysInput" type="number" min="1" value="600" class="floating-input border-2 border-indigo-300 rounded-lg p-2 w-full text-black focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder=" " aria-required="true">
+                            <label for="totalDaysInput" class="floating-label text-white text-sm drop-shadow-md">Total Days (Day n/m)</label>
+                        </div>
+                        <div class="floating-label-group">
+                            <input id="startDateInput" type="date" value="2025-06-01" class="floating-input border-2 border-indigo-300 rounded-lg p-2 w-full text-black focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder=" " aria-required="true">
+                            <label for="startDateInput" class="floating-label text-white text-sm drop-shadow-md">Start Date</label>
+                        </div>
+                        <div class="floating-label-group">
+                            <input id="headerPhotoInput" type="text" class="floating-input border-2 border-indigo-300 rounded-lg p-2 w-full text-black focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder=" ">
+                            <label for="headerPhotoInput" class="floating-label text-white text-sm drop-shadow-md">Header Photo URL</label>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-white text-sm font-semibold drop-shadow-md">Days to Count in Day n/m</label>
+                            <div class="grid grid-cols-4 gap-2">
+                                <label class="flex items-center space-x-2 text-white text-sm"><input type="checkbox" value="Mo" class="custom-checkbox day-checkbox" checked aria-label="Count Monday"><span>Mo</span></label>
+                                <label class="flex items-center space-x-2 text-white text-sm"><input type="checkbox" value="Tu" class="custom-checkbox day-checkbox" checked aria-label="Count Tuesday"><span>Tu</span></label>
+                                <label class="flex items-center space-x-2 text-white text-sm"><input type="checkbox" value="We" class="custom-checkbox day-checkbox" checked aria-label="Count Wednesday"><span>We</span></label>
+                                <label class="flex items-center space-x-2 text-white text-sm"><input type="checkbox" value="Th" class="custom-checkbox day-checkbox" checked aria-label="Count Thursday"><span>Th</span></label>
+                                <label class="flex items-center space-x-2 text-white text-sm"><input type="checkbox" value="Fr" class="custom-checkbox day-checkbox" checked aria-label="Count Friday"><span>Fr</span></label>
+                                <label class="flex items-center space-x-2 text-white text-sm"><input type="checkbox" value="Sa" class="custom-checkbox day-checkbox" checked aria-label="Count Saturday"><span>Sa</span></label>
+                                <label class="flex items-center space-x-2 text-white text-sm"><input type="checkbox" value="Su" class="custom-checkbox day-checkbox" aria-label="Count Sunday"><span>Su</span></label>
+                            </div>
+                        </div>
+                        <div class="flex justify-end space-x-2">
+                            <button onclick="toggleEditForm()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition duration-300 text-sm" aria-label="Cancel Edit">Cancel</button>
+                            <button onclick="saveSettings()" class="px-4 py-2 bg-indigo-800 text-white rounded-lg hover:bg-indigo-900 transition duration-300 text-sm" aria-label="Save Settings">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Date and Time Section -->
+        <div class="mt-4 flex justify-between items-center bg-indigo-600/30 rounded-lg p-4">
+            <span id="currentDate" class="text-lg font-['Playfair_Display'] text-black">Thursday, June 19, 2025</span>
+            <span id="currentDayCount" class="text-lg font-['Playfair_Display'] text-black">Day 18/600</span>
+            <span id="currentTime" class="text-lg font-['Playfair_Display'] text-black">04:37 PM IST</span>
+        </div>
+
+        <!-- Week/Day Selector -->
+        <div class="bg-white/90 shadow-2xl rounded-2xl p-6 mt-8 flex flex-col space-y-8 border border-gray-100">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <span class="font-semibold text-gray-800 text-xl font-['Playfair_Display'] text-shadow-sm">Week:</span>
+                    <select id="weekSelect" onchange="updateWeek()" class="border-2 border-indigo-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white/50" aria-label="Select Week"></select>
+                </div>
+            </div>
+            <div class="flex flex-wrap justify-center gap-3" id="dayButtons"></div>
+        </div>
+
+        <!-- Add Task Form -->
+        <div id="addTaskForm" class="bg-white/90 shadow-2xl rounded-2xl p-6 mt-8 hidden border border-gray-100">
+            <h3 id="taskFormTitle" class="font-bold text-2xl text-gray-800 mb-6 font-['Playfair_Display'] text-shadow-sm">Add New Task</h3>
+            <div class="space-y-6">
+                <div class="floating-label-group">
+                    <input id="taskSubject" type="text" class="floating-input border-2 border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder=" " aria-required="true">
+                    <label for="taskSubject" class="floating-label font-semibold text-gray-800 text-lg text-shadow-sm">Subject</label>
+                    <button id="voiceSubjectButton" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-indigo-500" aria-label="Voice Input for Subject"><i class="fas fa-microphone-alt"></i></button>
+                </div>
+                <div class="floating-label-group">
+                    <input id="taskTopic" type="text" class="floating-input border-2 border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder=" " aria-required="true">
+                    <label for="taskTopic" class="floating-label font-semibold text-gray-800 text-lg text-shadow-sm">Description</label>
+                    <button id="voiceTopicButton" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-indigo-500" aria-label="Voice Input for Description"><i class="fas fa-microphone-alt"></i></button>
+                </div>
+                <div class="floating-label-group">
+                    <input id="taskDetails" type="text" class="floating-input border-2 border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder=" ">
+                    <label for="taskDetails" class="floating-label font-semibold text-gray-800 text-lg text-shadow-sm">Details</label>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="cancelTaskForm()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition duration-300" aria-label="Cancel Task Form">Cancel</button>
+                    <button id="taskFormSubmit" onclick="submitTaskForm()" class="px-4 py-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-lg hover:bg-indigo-600 transition duration-300" aria-label="Submit Task">Submit</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Stats -->
+        <div class="bg-white/90 shadow-2xl rounded-2xl p-6 mt-8 flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0 border border-gray-100 stats-section">
+            <div class="flex items-center space-x-3 w-full md:w-auto order-1">
+                <div class="flex items-center space-x-3">
+                    <span class="font-bold text-xl text-gray-800 font-['Playfair_Display'] text-shadow-sm">Search Tasks:</span>
+                    <div class="search-container w-full md:w-64">
+                        <input id="taskSearch" type="text" oninput="debouncedSearch()" class="border-2 border-gray-200 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white/50 pr-8" placeholder="Search by subject or description" aria-label="Search Tasks">
+                        <button id="searchClear" class="search-clear" onclick="clearSearch()" aria-label="Clear Search"><i class="fas fa-times-circle"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center justify-center w-full md:w-auto order-2">
+                <span id="taskCount" class="text-lg font-['Playfair_Display'] text-gray-800">Task: 0/0</span>
+            </div>
+            <div class="w-full md:w-auto order-3">
+                <div class="text-lg font-['Playfair_Display'] text-gray-800">
+                    Total: <span id="totalTasks">0</span> | Completed: <span id="completedTasks">0</span> | Completion: <span id="completionPercentage">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div id="progressBarFill" class="progress-bar-fill" style="width: 0%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task List -->
+        <div id="taskList" class="mt-8 space-y-6 mb-8"></div>
+
+        <!-- Daily Summary -->
+        <div id="dailySummary" class="bg-white/90 shadow-2xl rounded-2xl p-6 mt-8 flex flex-col space-y-4 border border-gray-100">
+            <h3 class="font-bold text-2xl text-gray-800 font-['Playfair_Display'] text-shadow-sm">Daily Summary</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <p class="text-gray-800 text-lg font-semibold">Total Time Spent</p>
+                    <p class="text-2xl font-bold cursor-pointer" id="dailyTimeTotal" ondblclick="editDailyTime()">0h 0m 0s</p>
+                    <div id="dailyTimeEdit" class="hidden flex flex-col space-y-2">
+                        <input id="dailyTimeInput" type="text" class="time-edit-input" placeholder="e.g., 2h 30m">
+                        <button onclick="saveDailyTime()" class="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition duration-300 text-sm" aria-label="Save Time">Save</button>
+                    </div>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <p class="text-gray-800 text-lg font-semibold">Completed Tasks</p>
+                    <p class="text-2xl font-bold text-green-600" id="completedTasksCount">0</p>
+                </div>
+                <div class="bg-red-50 p-4 rounded-lg">
+                    <p class="text-gray-800 text-lg font-semibold">Pending Tasks</p>
+                    <p class="text-2xl font-bold text-red-600" id="pendingTasksCount">0</p>
+                </div>
+                <div class="bg-yellow-50 p-4 rounded-lg">
+                    <p class="text-gray-800 text-lg font-semibold">Total Tasks</p>
+                    <p class="text-2xl font-bold text-yellow-600" id="totalTasksCount">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recycle Bin -->
+        <div id="recycleBin" class="bg-white/90 shadow-2xl rounded-2xl p-6 mt-4 flex flex-col space-y-4 border border-gray-100">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-2xl text-gray-800 font-['Playfair_Display'] text-shadow-sm">Recycle Bin</h3>
+                <button onclick="clearAllDeletedTasks()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300 disabled:opacity-50" id="clearAllButton" disabled aria-label="Clear All Deleted Tasks">Clear All</button>
+            </div>
+            <div id="deletedTasksList" class="space-y-4"></div>
+        </div>
+
+        <!-- Modals -->
+        <div id="taskDetailsModal" class="fixed inset-0 bg-black/50 modal-backdrop flex items-center justify-center hidden" role="dialog" aria-labelledby="taskDetailsModalTitle">
+            <div class="bg-white/90 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-indigo-100 modal-content">
+                <h3 id="taskDetailsModalTitle" class="font-bold text-2xl text-gray-800 mb-4 font-['Playfair_Display'] text-shadow-sm">Task Details</h3>
+                <div id="taskDetailsContent" class="space-y-4"></div>
+                <div class="flex justify-end mt-6">
+                    <button onclick="closeTaskDetailsModal()" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-pink-500 text-white rounded-lg hover:bg-indigo-600 transition duration-300" aria-label="Close Task Details">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="deleteConfirmModal" class="fixed inset-0 bg-black/50 modal-backdrop flex items-center justify-center hidden" role="dialog" aria-labelledby="deleteConfirmModalTitle">
+            <div class="bg-white/90 rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-indigo-100 modal-content">
+                <h3 id="deleteConfirmModalTitle" class="font-bold text-2xl text-gray-800 mb-4 font-['Playfair_Display'] text-shadow-sm">Confirm Deletion</h3>
+                <p class="text-gray-700 mb-6">Are you sure you want to delete this task?</p>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="cancelDelete()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition duration-300" aria-label="Cancel Deletion">Cancel</button>
+                    <button onclick="confirmDelete()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300" aria-label="Confirm Deletion">OK</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="progressChartModal" class="fixed inset-0 bg-black/50 modal-backdrop flex items-center justify-center hidden" role="dialog" aria-labelledby="progressChartModalTitle">
+            <div class="bg-white/90 rounded-2xl p-6 w-full max-w-lg shadow-2xl border border-indigo-100 modal-content">
+                <h3 id="progressChartModalTitle" class="font-bold text-2xl text-gray-800 mb-4 font-['Playfair_Display'] text-shadow-sm">Task Progress</h3>
+                <div class="flex justify-center mb-4">
+                    <select id="progressTimeframe" onchange="updateProgressChart()" class="border-2 border-gray-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white/50" aria-label="Select Progress Timeframe">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
+                </div>
+                <canvas id="progressChart" height="200"></canvas>
+                <div class="flex justify-end mt-6">
+                    <button onclick="closeProgressChartModal()" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-pink-500 text-white rounded-lg hover:bg-indigo-600 transition duration-300" aria-label="Close Progress Chart">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-4 right-4 hidden bg-gray-600 text-white p-4 rounded-lg shadow-lg">
+        <span id="toastMessage"></span><button onclick="hideToast()" class="ml-2 text-white">×</button>
+    </div>
+
+    <!-- Floating Buttons -->
+    <button id="addTaskButton" onclick="toggleAddTaskForm()" class="floating-button floating-add-task" aria-label="Add Task">
+        <i class="fas fa-plus text-xl text-white"></i>
+        <span class="tooltip">Add a new task</span>
+    </button>
+    <button onclick="openProgressChartModal()" class="floating-button floating-chart-button" aria-label="View Task Progress Chart">
+        <i class="fas fa-chart-bar text-xl text-white"></i>
+        <span class="tooltip">View Task Progress</span>
+    </button>
+
+    <script>
+        // State Management
+        const state = {
+            startDate: new Date('2025-06-01'),
+            currentWeek: 1,
+            currentDay: 'Th',
+            totalWeekdays: 600,
+            baseDays: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
+            countedDays: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
+            tasks: {},
+            deletedTasks: [],
+            headerPhotoUrl: 'https://via.placeholder.com/80',
+            draggedIndex: null,
+            chart: null,
+            editingTask: null,
+            pendingDeleteModal: null,
+            isAdd: true,
+            timers: { active: new Map() },
+            dailyTimeRecords: {}
+        };
+
+        // DOM Elements
+        const DOM = {
+            editForm: document.getElementById('editForm'),
+            totalDaysInput: document.getElementById('totalDaysInput'),
+            startDateInput: document.getElementById('startDateInput'),
+            headerPhotoInput: document.getElementById('headerPhotoInput'),
+            headerPhoto: document.getElementById('headerPhoto'),
+            currentDate: document.getElementById('currentDate'),
+            currentDayCount: document.getElementById('currentDayCount'),
+            currentTime: document.getElementById('currentTime'),
+            taskList: document.getElementById('taskList'),
+            weekSelect: document.getElementById('weekSelect'),
+            dayButtons: document.getElementById('dayButtons'),
+            addTaskForm: document.getElementById('addTaskForm'),
+            taskFormTitle: document.getElementById('taskFormTitle'),
+            taskSubject: document.getElementById('taskSubject'),
+            taskTopic: document.getElementById('taskTopic'),
+            taskDetails: document.getElementById('taskDetails'),
+            taskFormSubmit: document.getElementById('taskFormSubmit'),
+            taskSearch: document.getElementById('taskSearch'),
+            searchClear: document.getElementById('searchClear'),
+            dailyTimeTotal: document.getElementById('dailyTimeTotal'),
+            dailyTimeInput: document.getElementById('dailyTimeInput'),
+            dailyTimeEdit: document.getElementById('dailyTimeEdit'),
+            completedTasksCount: document.getElementById('completedTasksCount'),
+            pendingTasksCount: document.getElementById('pendingTasksCount'),
+            totalTasksCount: document.getElementById('totalTasksCount'),
+            taskDetailsModal: document.getElementById('taskDetailsModal'),
+            taskDetailsContent: document.getElementById('taskDetailsContent'),
+            deleteConfirmModal: document.getElementById('deleteConfirmModal'),
+            progressChartModal: document.getElementById('progressChartModal'),
+            progressTimeframe: document.getElementById('progressTimeframe'),
+            progressChart: document.getElementById('progressChart'),
+            dayCheckboxes: document.querySelectorAll('.day-checkbox'),
+            toast: document.getElementById('toast'),
+            toastMessage: document.getElementById('toastMessage'),
+            recycleBin: document.getElementById('recycleBin'),
+            deletedTasksList: document.getElementById('deletedTasksList'),
+            taskCount: document.getElementById('taskCount'),
+            totalTasks: document.getElementById('totalTasks'),
+            completedTasks: document.getElementById('completedTasks'),
+            completionPercentage: document.getElementById('completionPercentage'),
+            progressBarFill: document.getElementById('progressBarFill'),
+            clearAllButton: document.getElementById('clearAllButton')
+        };
+
+        // Day Colors
+        const dayColors = {
+            Mo: { bg: 'bg-red-300', hoverBg: 'hover:bg-red-400' },
+            Tu: { bg: 'bg-orange-300', hoverBg: 'hover:bg-orange-400' },
+            We: { bg: 'bg-yellow-300', hoverBg: 'hover:bg-yellow-400' },
+            Th: { bg: 'bg-green-300', hoverBg: 'hover:bg-green-400' },
+            Fr: { bg: 'bg-blue-400', hoverBg: 'hover:bg-blue-500' },
+            Sa: { bg: 'bg-indigo-400', hoverBg: 'hover:bg-indigo-500' },
+            Su: { bg: 'bg-purple-400', hoverBg: 'hover:bg-purple-500' }
+        };
+
+        // Utility Functions
+        const utils = {
+            storage: {
+                save: (key, value) => localStorage.setItem(key, JSON.stringify(value)),
+                load: key => JSON.parse(localStorage.getItem(key) || '{}')
+            },
+            getDayOfWeek: date => state.baseDays[date.getDay() === 0 ? 6 : date.getDay() - 1],
+            countWeekdaysBetween: (start, end) => {
+                let count = 0, current = new Date(start);
+                current.setHours(0, 0, 0, 0);
+                end.setHours(0, 0, 0, 0);
+                while (current <= end) {
+                    if (state.countedDays.includes(utils.getDayOfWeek(current))) count++;
+                    current.setDate(current.getDate() + 1);
+                }
+                return count;
+            },
+            calculateDate: (week, day) => {
+                const date = new Date(state.startDate);
+                date.setDate(date.getDate() + (week - 1) * 7 + state.baseDays.indexOf(day));
+                return date;
+            },
+            getFirstUrlFromText: text => {
+                const match = text.match(/(https?:\/\/[^\s]+)|(www\.[^\s]+)|((?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?:\/[^\s]*)?)/);
+                return match ? match[0].startsWith('http') ? match[0] : 'https://' + match[0] : null;
+            },
+            triggerConfetti: () => confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }),
+            getMonthRange: date => ({ start: new Date(date.getFullYear(), date.getMonth(), 1), end: new Date(date.getFullYear(), date.getMonth() + 1, 0) }),
+            playSound: sound => sound.play().catch(() => {}),
+            showToast: (msg, type = 'error') => {
+                DOM.toast.className = `fixed top-4 right-4 bg-${type === 'error' ? 'red' : 'green'}-600 text-white p-4 rounded-lg shadow-lg`;
+                DOM.toastMessage.textContent = msg;
+                DOM.toast.classList.remove('hidden');
+                setTimeout(() => utils.hideToast(), 3000);
+            },
+            hideToast: () => DOM.toast.classList.add('hidden'),
+            formatTime: seconds => {
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                const secs = seconds % 60;
+                return `${hours}h ${minutes}m ${secs}s`;
+            },
+            parseTimeInput: input => {
+                const regex = /^(\d+h)?\s*(\d+m)?\s*(\d+s)?$/;
+                const match = input.trim().match(regex);
+                if (!match) return null;
+                let seconds = 0;
+                if (match[1]) seconds += parseInt(match[1]) * 3600;
+                if (match[2]) seconds += parseInt(match[2]) * 60;
+                if (match[3]) seconds += parseInt(match[3]);
+                return seconds;
+            },
+            getDateKey: date => date.toISOString().split('T')[0],
+            validateUrl: url => {
+                try {
+                    new URL(url);
+                    return true;
+                } catch {
+                    return false;
+                }
+            }
+        };
+
+        // Initialize Tasks
+        const initializeTasks = () => {
+            const tasks = {};
+            const totalWeeks = Math.ceil(state.totalWeekdays / state.countedDays.length);
+            for (let i = 1; i <= totalWeeks; i++) {
+                tasks[`Week${i}`] = Object.fromEntries(state.baseDays.map(day => [day, []]));
+            }
+            return tasks;
+        };
+
+        // Load Data
+        const loadData = () => {
+            state.headerPhotoUrl = utils.storage.load('plannerHeaderPhoto') || state.headerPhotoUrl;
+            DOM.headerPhoto.src = DOM.headerPhotoInput.value = state.headerPhotoUrl;
+            state.startDate = new Date(utils.storage.load('plannerStartDate') || state.startDate);
+            DOM.startDateInput.value = state.startDate.toISOString().split('T')[0];
+            state.totalWeekdays = parseInt(utils.storage.load('plannerTotalWeekdays')) || state.totalWeekdays;
+            DOM.totalDaysInput.value = state.totalWeekdays;
+            state.countedDays = utils.storage.load('plannerCountedDays') || state.countedDays;
+            DOM.dayCheckboxes.forEach(cb => cb.checked = state.countedDays.includes(cb.value));
+            state.tasks = utils.storage.load('plannerTasks') || initializeTasks();
+            state.deletedTasks = utils.storage.load('plannerDeletedTasks') || [];
+            // Handle backward compatibility for dailyTimeRecords
+            const rawRecords = utils.storage.load('dailyTimeRecords') || {};
+            state.dailyTimeRecords = {};
+            Object.entries(rawRecords).forEach(([key, value]) => {
+                state.dailyTimeRecords[key] = typeof value === 'number' ? { time: value, manualEdit: false } : value;
+            });
+            utils.storage.save('dailyTimeRecords', state.dailyTimeRecords);
+        };
+
+        // Save Settings
+        const saveSettings = () => {
+            const newStartDate = new Date(DOM.startDateInput.value);
+            if (isNaN(newStartDate.getTime())) return utils.showToast('Invalid start date', 'error');
+            state.startDate = newStartDate;
+            utils.storage.save('plannerStartDate', state.startDate.toISOString());
+
+            const newTotalWeekdays = parseInt(DOM.totalDaysInput.value);
+            if (newTotalWeekdays < 1) return utils.showToast('Total days must be at least 1', 'error');
+            state.totalWeekdays = newTotalWeekdays;
+            utils.storage.save('plannerTotalWeekdays', state.totalWeekdays);
+
+            state.countedDays = Array.from(DOM.dayCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+            if (!state.countedDays.length) return utils.showToast('Select at least one day', 'error');
+            utils.storage.save('plannerCountedDays', state.countedDays);
+
+            const newHeaderPhotoUrl = DOM.headerPhotoInput.value.trim();
+            if (newHeaderPhotoUrl && utils.validateUrl(newHeaderPhotoUrl)) {
+                state.headerPhotoUrl = DOM.headerPhoto.src = newHeaderPhotoUrl;
+                utils.storage.save('plannerHeaderPhoto', newHeaderPhotoUrl);
+            } else if (newHeaderPhotoUrl) {
+                utils.showToast('Invalid photo URL', 'error');
+            }
+
+            toggleEditForm();
+            updateWeeks();
+            calculateCurrentWeekAndDay();
+            updateDateDisplay();
+            updateTasks();
+        };
+
+        // Calculate Current Week and Day
+        const calculateCurrentWeekAndDay = () => {
+            const today = new Date();
+            const totalDaysSinceStart = Math.floor((today - state.startDate) / (1000 * 60 * 60 * 24));
+            let countedDays = 0, currentDate = new Date(state.startDate);
+            currentDate.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+            while (currentDate <= today) {
+                if (state.countedDays.includes(utils.getDayOfWeek(currentDate))) countedDays++;
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            state.currentWeek = Math.max(1, Math.ceil(countedDays / state.countedDays.length));
+            state.currentDay = utils.getDayOfWeek(today);
+        };
+
+        // Update Date Display
+        const updateDateDisplay = () => {
+            const date = utils.calculateDate(state.currentWeek, state.currentDay);
+            DOM.currentDate.textContent = date.toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            const dayNumber = Math.max(0, utils.countWeekdaysBetween(state.startDate, date));
+            DOM.currentDayCount.textContent = `Day ${dayNumber}/${state.totalWeekdays}`;
+        };
+
+        // Update Time Display
+        let timeInterval;
+        const updateTimeDisplay = () => {
+            clearInterval(timeInterval);
+            timeInterval = setInterval(() => {
+                const now = new Date();
+                DOM.currentTime.textContent = now.toLocaleTimeString('en-US', { hour12: true, timeZone: 'Asia/Kolkata' }) + ' IST';
+                if (now.getHours() === 0 && now.getMinutes() === 0 && now.getSeconds() < 2) {
+                    recordDailyTime();
+                    advanceDay();
+                }
+            }, 1000);
+        };
+
+        // Record Daily Time
+        const recordDailyTime = () => {
+            const date = new Date();
+            const dateKey = utils.getDateKey(date);
+            const week = `Week${state.currentWeek}`;
+            const tasks = state.tasks[week]?.[state.currentDay] || [];
+            const totalTime = tasks.reduce((sum, task) => sum + getTaskTimeSpent(task), 0);
+            state.dailyTimeRecords[dateKey] = totalTime;
+            utils.storage.save('dailyTimeRecords', state.dailyTimeRecords);
+            updateDailySummary();
+        };
+
+        // Edit Daily Time
+        const editDailyTime = () => {
+            DOM.dailyTimeTotal.classList.add('hidden');
+            DOM.dailyTimeEdit.classList.remove('hidden');
+            DOM.dailyTimeInput.value = DOM.dailyTimeTotal.textContent;
+            DOM.dailyTimeInput.focus();
+        };
+
+        // Save Daily Time
+        const saveDailyTime = () => {
+            const input = DOM.dailyTimeInput.value.trim();
+            const seconds = utils.parseTimeInput(input);
+            if (seconds === null) {
+                utils.showToast('Invalid time format. Use e.g., 2h 30m 15s', 'error');
+                DOM.dailyTimeEdit.classList.add('hidden');
+                DOM.dailyTimeTotal.classList.remove('hidden');
+                return;
+            }
+            const date = utils.calculateDate(state.currentWeek, state.currentDay);
+            const dateKey = utils.getDateKey(date);
+            state.dailyTimeRecords[dateKey] = seconds;
+            utils.storage.save('dailyTimeRecords', state.dailyTimeRecords);
+            DOM.dailyTimeTotal.textContent = utils.formatTime(seconds);
+            DOM.dailyTimeEdit.classList.add('hidden');
+            DOM.dailyTimeTotal.classList.remove('hidden');
+            updateDailySummary();
+        };
+
+        // Update Daily Summary
+        const updateDailySummary = () => {
+            const week = `Week${state.currentWeek}`;
+            const tasks = state.tasks[week]?.[state.currentDay] || [];
+            const date = utils.calculateDate(state.currentWeek, state.currentDay);
+            const dateKey = utils.getDateKey(date);
+            
+            // Always calculate total time from task timers for real-time updates
+            let totalTime = tasks.reduce((sum, task) => sum + (getTaskTimeSpent(task) || 0), 0);
+            
+            // Use stored value from dailyTimeRecords only if no timers are running and manual edit exists
+            const hasRunningTimers = tasks.some(task => task.timerStatus === 'running');
+            if (!hasRunningTimers && state.dailyTimeRecords[dateKey]?.manualEdit) {
+                totalTime = state.dailyTimeRecords[dateKey].time;
+            } else if (!hasRunningTimers && state.dailyTimeRecords[dateKey]?.time !== undefined) {
+                totalTime = state.dailyTimeRecords[dateKey].time;
+            } else {
+                // Update dailyTimeRecords with calculated time if no manual edit and no timers running
+                state.dailyTimeRecords[dateKey] = {
+                    time: totalTime,
+                    manualEdit: false
+                };
+                utils.storage.save('dailyTimeRecords', state.dailyTimeRecords); // Ensure save on update
+            }
+            
+            DOM.dailyTimeTotal.textContent = utils.formatTime(totalTime || 0);
+            
+            const completed = tasks.filter(task => task.completed === true).length;
+            const pending = tasks.filter(task => task.completed === false).length;
+            const total = tasks.length;
+            
+            DOM.completedTasksCount.textContent = completed;
+            DOM.pendingTasksCount.textContent = pending;
+            DOM.totalTasksCount.textContent = total;
+        };
+
+        // Advance Day
+        const advanceDay = () => {
+            const dayIndex = state.baseDays.indexOf(state.currentDay);
+            if (dayIndex + 1 < state.baseDays.length) {
+                state.currentDay = state.baseDays[dayIndex + 1];
+            } else {
+                state.currentDay = state.baseDays[0];
+                state.currentWeek++;
+            }
+            updateWeeks();
+            updateTasks();
+            updateDateDisplay();
+        };
+
+        // Update Weeks
+        const updateWeeks = () => {
+            const totalWeeks = Math.ceil(state.totalWeekdays / state.countedDays.length);
+            DOM.weekSelect.innerHTML = Array.from({ length: totalWeeks }, (_, i) => `<option value="${i + 1}" ${i + 1 === state.currentWeek ? 'selected' : ''}>Week ${i + 1}</option>`).join('');
+            Object.keys(state.tasks).forEach(week => {
+                if (parseInt(week.replace('Week', '')) > totalWeeks) delete state.tasks[week];
+            });
+            updateDays();
+            updateTasks();
+            updateDateDisplay();
+        };
+
+        // Update Days
+        const updateDays = () => {
+            DOM.dayButtons.innerHTML = state.baseDays.map(day => `
+                <button onclick="selectDay('${day}')" class="px-4 py-2 ${day === state.currentDay ? 'bg-blue-600 text-white shadow-inner' : `${dayColors[day].bg} ${dayColors[day].hoverBg}`} rounded-lg hover:bg-blue-100 transition-all" title="Select ${day}" aria-label="Select ${day}">${day}</button>
+            `).join('');
+        };
+
+        // Select Day
+        const selectDay = day => {
+            state.currentDay = day;
+            updateDays();
+            updateTasks();
+            updateDateDisplay();
+        };
+
+        // Update Week
+        const updateWeek = () => {
+            state.currentWeek = parseInt(DOM.weekSelect.value);
+            updateTasks();
+            updateDateDisplay();
+        };
+
+        // Toggle Theme
+        const toggleTheme = () => {
+            const isDark = document.body.dataset.theme === 'dark';
+            document.body.dataset.theme = isDark ? 'light' : 'dark';
+            const btn = document.querySelector('[aria-label="Toggle Theme"] i');
+            btn.className = `fas fa-lightbulb${isDark ? '' : '-regular'} text-xl`;
+            btn.nextElementSibling.textContent = `Toggle ${isDark ? 'Dark' : 'Light'} Mode`;
+            if (state.chart) updateProgressChart();
+        };
+
+        // Toggle Edit Form
+        const toggleEditForm = () => {
+            DOM.editForm.classList.toggle('hidden');
+            if (!DOM.editForm.classList.contains('hidden')) {
+                DOM.totalDaysInput.focus();
+            }
+        };
+
+        // Toggle Add Task Form
+        const toggleAddTaskForm = (isAdd = true) => {
+            state.isAdd = isAdd;
+            DOM.taskFormTitle.textContent = isAdd ? 'Add New Task' : 'Edit Task';
+            DOM.taskFormSubmit.setAttribute('aria-label', isAdd ? 'Submit Task' : 'Save Task');
+            DOM.addTaskForm.classList.toggle('hidden');
+            if (!DOM.addTaskForm.classList.contains('hidden')) {
+                DOM.taskSubject.focus();
+            }
+            if (isAdd) {
+                DOM.taskSubject.value = '';
+                DOM.taskTopic.value = '';
+                DOM.taskDetails.value = '';
+                state.editingTask = null;
+            }
+        };
+
+        // Cancel Task Form
+        const cancelTaskForm = () => toggleAddTaskForm(false);
+
+        // Submit Task Form
+        const submitTaskForm = () => state.isAdd ? addTask() : saveEditedTask();
+
+        // Add Task
+        const addTask = () => {
+            const subject = DOM.taskSubject.value.trim().toUpperCase();
+            const topic = DOM.taskTopic.value.trim();
+            const details = DOM.taskDetails.value.trim() || 'No details provided';
+            if (!subject || !topic) return utils.showToast('Subject and topic are required', 'error');
+            const week = `Week${state.currentWeek}`;
+            state.tasks[week] ??= Object.fromEntries(state.baseDays.map(d => [d, []]));
+            state.tasks[week][state.currentDay].push({
+                subject,
+                topic,
+                details,
+                subjectColor: ['MATHS', 'ENGLISH'].includes(subject) ? 'text-green-600' : 'text-red-600',
+                completed: null,
+                timerStatus: 'stopped',
+                timerStart: null,
+                accumulatedTime: 0
+            });
+            utils.storage.save('plannerTasks', state.tasks);
+            updateTasks();
+            toggleAddTaskForm(false);
+        };
+
+        // Edit Task
+        const editTask = (week, day, index) => {
+            state.editingTask = { week, day, index };
+            const { subject, topic, details } = state.tasks[week][day][index];
+            DOM.taskSubject.value = subject;
+            DOM.taskTopic.value = topic;
+            DOM.taskDetails.value = details;
+            toggleAddTaskForm(false);
+        };
+
+        // Save Edited Task
+        const saveEditedTask = () => {
+            if (!state.editingTask) return utils.showToast('No task selected for editing', 'error');
+            const { week, day, index } = state.editingTask;
+            const subject = DOM.taskSubject.value.trim().toUpperCase();
+            const topic = DOM.taskTopic.value.trim();
+            const details = DOM.taskDetails.value.trim() || 'No details provided';
+            if (!subject || !topic) return utils.showToast('Subject and topic are required', 'error');
+            state.tasks[week][day][index] = {
+                ...state.tasks[week][day][index],
+                subject,
+                topic,
+                details,
+                subjectColor: ['MATHS', 'ENGLISH'].includes(subject) ? 'text-green-600' : 'text-red-600'
+            };
+            utils.storage.save('plannerTasks', state.tasks);
+            updateTasks();
+            cancelTaskForm();
+        };
+
+        // Get Task Time Spent
+        const getTaskTimeSpent = (task) => {
+            if (!task) return 0;
+            let totalTime = task.accumulatedTime || 0;
+            if (task.timerStatus === 'running' && task.timerStart) {
+                totalTime += Math.floor((Date.now() - task.timerStart) / 1000);
+            }
+            return isNaN(totalTime) ? 0 : totalTime;
+        };
+
+        // Update Timer
+        let timerFrame = null;
+        const updateTimer = () => {
+            if (!state.timers.active.size) {
+                cancelAnimationFrame(timerFrame);
+                timerFrame = null;
+                return;
+            }
+            state.timers.active.forEach((_, key) => {
+                const [week, day, index] = key.split(':');
+                const task = state.tasks[week]?.[day]?.[index];
+                if (task?.timerStatus === 'running' && task.timerStart) {
+                    const timeSpent = utils.formatTime(getTaskTimeSpent(task));
+                    const timerElement = document.querySelector(`[data-task-id="${week}-${day}-${index}"] .time-spent`);
+                    if (timerElement) timerElement.textContent = timeSpent;
+                }
+            });
+            updateDailySummary();
+            updateTaskStats();
+            setTimeout(() => timerFrame = requestAnimationFrame(updateTimer), 1000);
+        };
+
+        // Start Task Timer
+        const startTaskTimer = (week, day, index) => {
+            const task = state.tasks[week][day][index];
+            if (task.timerStatus === 'running') return;
+            task.timerStatus = 'running';
+            task.timerStart = task.timerStart || Date.now();
+            task.accumulatedTime = task.accumulatedTime || 0;
+            state.timers.active.set(`${week}:${day}:${index}`, true);
+            utils.storage.save('plannerTasks', state.tasks);
+            if (!timerFrame) {
+                timerFrame = requestAnimationFrame(updateTimer);
+            }
+            updateTasks();
+        };
+
+        // Pause Task Timer
+        const pauseTaskTimer = (week, day, index) => {
+            const task = state.tasks[week][day][index];
+            if (task.timerStatus !== 'running') return;
+            task.timerStatus = 'paused';
+            task.accumulatedTime += Math.floor((Date.now() - task.timerStart) / 1000);
+            task.timerStart = null;
+            state.timers.active.delete(`${week}:${day}:${index}`);
+            utils.storage.save('plannerTasks', state.tasks);
+            updateTasks();
+            updateDailySummary();
+        };
+
+        // Stop Task Timer
+        const stopTaskTimer = (week, day, index) => {
+            const task = state.tasks[week][day][index];
+            if (task.timerStatus === 'stopped') return;
+            if (task.timerStatus === 'running') {
+                task.accumulatedTime += Math.floor((Date.now() - task.timerStart) / 1000);
+            }
+            task.timerStatus = 'stopped';
+            task.timerStart = null;
+            state.timers.active.delete(`${week}:${day}:${index}`);
+            utils.storage.save('plannerTasks', state.tasks);
+            utils.showToast(`Task timer stopped`, 'success');
+            updateTasks();
+        };
+
+        // Mark Task Completed
+        const markTaskCompleted = (week, day, index, status) => {
+            const task = state.tasks[week][day][index];
+            task.completed = status;
+            if (status === true && task.timerStatus !== 'stopped') {
+                stopTaskTimer(week, day, index);
+            }
+            if (status) {
+                utils.triggerConfetti();
+            }
+            utils.storage.save('plannerTasks', state.tasks);
+            updateTasks();
+        };
+
+        // Show Delete Confirm
+        const showDeleteConfirm = (week, day, index) => {
+            state.pendingDeleteModal = { week, day, index };
+            DOM.deleteConfirmModal.classList.remove('hidden');
+            DOM.deleteConfirmModal.querySelector('[aria-label="Cancel Deletion"]').focus();
+        };
+
+        // Confirm Delete
+        const confirmDelete = () => {
+            if (!state.pendingDeleteModal) return;
+            const { week, day, index } = state.pendingDeleteModal;
+            const task = state.tasks[week][day][index];
+            if (task.timerStatus !== 'stopped') {
+                stopTaskTimer(week, day, index);
+            }
+            state.deletedTasks.push({ 
+                week, 
+                day, 
+                task: JSON.parse(JSON.stringify(task)), 
+                timestamp: Date.now() 
+            });
+            state.tasks[week][day].splice(index, 1);
+            utils.storage.save('plannerTasks', state.tasks);
+            utils.storage.save('plannerDeletedTasks', state.deletedTasks);
+            updateTasks();
+            updateDeletedTasksList();
+            DOM.deleteConfirmModal.classList.add('hidden');
+            state.pendingDeleteModal = null;
+            utils.showToast('Task moved to recycle bin', 'success');
+        };
+
+        // Cancel Delete
+        const cancelDelete = () => {
+            DOM.deleteConfirmModal.classList.add('hidden');
+            state.pendingDeleteModal = null;
+        };
+
+        // Update Deleted Tasks List
+        const updateDeletedTasksList = () => {
+            DOM.clearAllButton.disabled = state.deletedTasks.length === 0;
+            DOM.clearAllButton.setAttribute('aria-disabled', state.deletedTasks.length === 0);
+            if (state.deletedTasks.length === 0) {
+                DOM.deletedTasksList.innerHTML = '<p class="text-gray-600">Recycle bin is empty</p>';
+                return;
+            }
+            DOM.deletedTasksList.innerHTML = state.deletedTasks.map((deletedTask, index) => {
+                const { week, day, task, timestamp } = deletedTask;
+                const deleteDate = new Date(timestamp).toLocaleString();
+                return `
+                    <div class="task-card shadow-lg rounded-lg p-4 bg-gradient-to-r from-gray-100 to-gray-200 border border-gray-300">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="${task.subjectColor} font-bold">${task.subject}</span>
+                                </div>
+                                <p class="text-gray-700">${task.topic}</p>
+                                <p class="text-gray-500 text-sm">Deleted on: ${deleteDate}</p>
+                                <p class="text-gray-500 text-sm">Originally from: ${week.replace('Week', 'Week ')} - ${day}</p>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="restoreTask(${index})" class="px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-300" title="Restore Task" aria-label="Restore Task">Restore</button>
+                                <button onclick="permanentlyDeleteTask(${index})" class="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300" title="Permanently Delete Task" aria-label="Permanently Delete Task">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        // Restore Task
+        const restoreTask = index => {
+            const deletedTask = state.deletedTasks[index];
+            const { week, day, task } = deletedTask;
+            state.tasks[week] ??= Object.fromEntries(state.baseDays.map(d => [d, []]));
+            state.tasks[week][day] ??= [];
+            state.tasks[week][day].push({ ...task, timerStatus: 'stopped', timerStart: null });
+            state.deletedTasks.splice(index, 1);
+            utils.storage.save('plannerTasks', state.tasks);
+            utils.storage.save('plannerDeletedTasks', state.deletedTasks);
+            updateTasks();
+            updateDeletedTasksList();
+            utils.showToast('Task restored successfully', 'success');
+        };
+
+        // Permanently Delete Task
+        const permanentlyDeleteTask = index => {
+            state.deletedTasks.splice(index, 1);
+            utils.storage.save('plannerDeletedTasks', state.deletedTasks);
+            updateDeletedTasksList();
+            utils.showToast('Task permanently deleted', 'success');
+        };
+
+        // Clear All Deleted Tasks
+        const clearAllDeletedTasks = () => {
+            if (state.deletedTasks.length === 0) return;
+            state.deletedTasks = [];
+            utils.storage.save('plannerDeletedTasks', state.deletedTasks);
+            updateDeletedTasksList();
+            utils.showToast('All deleted tasks cleared', 'success');
+        };
+
+        // Duplicate Task To Next Day
+        const duplicateTaskToNextDay = (week, day, index) => {
+            const currentDayIndex = state.baseDays.indexOf(day);
+            let nextDay, nextWeek = week;
+            if (currentDayIndex + 1 < state.baseDays.length) {
+                nextDay = state.baseDays[currentDayIndex + 1];
+            } else {
+                nextDay = state.baseDays[0];
+                nextWeek = `Week${parseInt(week.replace('Week', '')) + 1}`;
+            }
+            const task = {
+                ...state.tasks[week][day][index],
+                completed: null,
+                accumulatedTime: 0,
+                timerStatus: 'stopped',
+                timerStart: null
+            };
+            state.tasks[nextWeek] ??= Object.fromEntries(state.baseDays.map(d => [d, []]));
+            state.tasks[nextWeek][nextDay].push(task);
+            utils.storage.save('plannerTasks', state.tasks);
+            updateTasks();
+            utils.showToast('Task duplicated to next day', 'success');
+        };
+
+        // Show Task Details
+        const showTaskDetails = (week, day, index) => {
+            const task = state.tasks[week][day][index];
+            DOM.taskDetailsContent.innerHTML = `
+                <p><span class="font-bold text-gray-800">Subject:</span> <span class="${task.subjectColor}">${task.subject}</span></p>
+                <p><span class="font-bold text-gray-800">Topic:</span> ${task.topic}</p>
+                <p><span class="font-bold text-gray-800">Details:</span> ${task.details}</p>
+                <p><span class="font-bold text-gray-800">Status:</span> ${task.completed === true ? 'Completed' : task.completed === false ? 'Pending' : 'Not Started'}</p>
+                <p><span class="font-bold text-gray-800">Time Spent:</span> ${utils.formatTime(getTaskTimeSpent(task))}</p>
+                <p><span class="font-bold text-gray-800">Week:</span> ${week.replace('Week', 'Week ')}</p>
+                <p><span class="font-bold text-gray-800">Day:</span> ${day}</p>
+            `;
+            DOM.taskDetailsModal.classList.remove('hidden');
+            DOM.taskDetailsModal.querySelector('[aria-label="Close Task Details"]').focus();
+        };
+
+        // Close Task Details Modal
+        const closeTaskDetailsModal = () => {
+            DOM.taskDetailsModal.classList.add('hidden');
+        };
+
+        // Update Progress Chart
+        const updateProgressChart = () => {
+            if (!window.Chart || !DOM.progressChart) {
+                utils.showToast('Chart library or canvas not found', 'error');
+                return;
+            }
+            const timeframe = DOM.progressTimeframe.value;
+            let labels = [], completedData = [], pendingData = [], notStartedData = [];
+            if (timeframe === 'daily') {
+                labels = state.baseDays;
+                state.baseDays.forEach(day => {
+                    const tasks = state.tasks[`Week${state.currentWeek}`]?.[day] || [];
+                    const counts = tasks.reduce((acc, t) => ({
+                        completed: acc.completed + (t.completed === true),
+                        pending: acc.pending + (t.completed === false),
+                        notStarted: acc.notStarted + (t.completed === null)
+                    }), { completed: 0, pending: 0, notStarted: 0 });
+                    completedData.push(counts.completed);
+                    pendingData.push(counts.pending);
+                    notStartedData.push(counts.notStarted);
+                });
+            } else if (timeframe === 'weekly') {
+                const totalWeeks = Math.min(Math.ceil(state.totalWeekdays / state.countedDays.length), 4);
+                for (let i = Math.max(1, state.currentWeek - 3); i <= state.currentWeek; i++) {
+                    labels.push(`Week ${i}`);
+                    const counts = state.baseDays.reduce((acc, day) => {
+                        const tasks = state.tasks[`Week${i}`]?.[day] || [];
+                        return tasks.reduce((a, t) => ({
+                            completed: a.completed + (t.completed === true),
+                            pending: a.pending + (t.completed === false),
+                            notStarted: a.notStarted + (t.completed === null)
+                        }), acc);
+                    }, { completed: 0, pending: 0, notStarted: 0 });
+                    completedData.push(counts.completed);
+                    pendingData.push(counts.pending);
+                    notStartedData.push(counts.notStarted);
+                }
+            } else {
+                const { start, end } = utils.getMonthRange(new Date());
+                let current = new Date(start), monthCount = 0;
+                while (current <= end && monthCount++ < 12) {
+                    labels.push(current.toLocaleString('en-US', { month: 'short', year: 'numeric' }));
+                    const counts = Object.entries(state.tasks).reduce((acc, [week, days]) => {
+                        return Object.entries(days).reduce((a, [day, tasks]) => {
+                            const date = utils.calculateDate(parseInt(week.replace('Week', '')), day);
+                            if (date.getMonth() === current.getMonth() && date.getFullYear() === current.getFullYear()) {
+                                return tasks.reduce((b, t) => ({
+                                    completed: b.completed + (t.completed === true),
+                                    pending: b.pending + (t.completed === false),
+                                    notStarted: b.notStarted + (t.completed === null)
+                                }), a);
+                            }
+                            return a;
+                        }, acc);
+                    }, { completed: 0, pending: 0, notStarted: 0 });
+                    completedData.push(counts.completed);
+                    pendingData.push(counts.pending);
+                    notStartedData.push(counts.notStarted);
+                    current.setMonth(current.getMonth() + 1);
+                }
+            }
+            if (state.chart) state.chart.destroy();
+            const isDark = document.body.dataset.theme === 'dark';
+            state.chart = new Chart(DOM.progressChart, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: 'Completed', data: completedData, backgroundColor: '#34D399' },
+                        { label: 'Pending', data: pendingData, backgroundColor: '#F87171' },
+                        { label: 'Not Started', data: notStartedData, backgroundColor: '#E5E7EB' }
+                    ]
+                },
+                options: {
+                    plugins: {
+                        legend: { labels: { color: isDark ? '#e5e7eb' : '#1f2937' } },
+                        title: { display: true, text: `${timeframe[0].toUpperCase() + timeframe.slice(1)} Task Progress`, color: isDark ? '#e5e7eb' : '#1f2937', font: { size: 16 } }
+                    },
+                    scales: {
+                        x: { stacked: true, ticks: { color: isDark ? '#e5e7eb' : '#1f2937' }, grid: { display: false } },
+                        y: { stacked: true, beginAtZero: true, ticks: { color: isDark ? '#e5e7eb' : '#1f2937' }, grid: { color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' } }
+                    }
+                }
+            });
+        };
+
+        // Open Progress Chart Modal
+        const openProgressChartModal = () => {
+            DOM.progressChartModal.classList.remove('hidden');
+            updateProgressChart();
+            DOM.progressChartModal.querySelector('[aria-label="Close Progress Chart"]').focus();
+        };
+
+        // Close Progress Chart Modal
+        const closeProgressChartModal = () => {
+            DOM.progressChartModal.classList.add('hidden');
+            if (state.chart) {
+                state.chart.destroy();
+                state.chart = null;
+            }
+        };
+
+        // Handle Drag Start
+        const handleDragStart = (week, day, index, el) => {
+            state.draggedIndex = index;
+            el.classList.add('opacity-50');
+        };
+
+        // Handle Drag End
+        const handleDragEnd = el => {
+            el.classList.remove('opacity-50');
+            state.draggedIndex = null;
+        };
+
+        // Handle Drop
+        const handleDrop = (week, day, index) => {
+            if (state.draggedIndex === null || state.draggedIndex === index) return;
+            const task = state.tasks[week][day][state.draggedIndex];
+            if (task.timerStatus === 'running') {
+                task.accumulatedTime += Math.floor((Date.now() - task.timerStart) / 1000);
+                task.timerStart = Date.now();
+            }
+            state.tasks[week][day].splice(state.draggedIndex, 1);
+            state.tasks[week][day].splice(index, 0, task);
+            utils.storage.save('plannerTasks', state.tasks);
+            updateTasks();
+        };
+
+        // Handle Task Click
+        const handleTaskClick = (week, day, index, e) => {
+            if (e.target.closest('button') || state.draggedIndex !== null) return;
+            const url = utils.getFirstUrlFromText(state.tasks[week][day][index].details);
+            if (url) window.open(url, '_blank');
+        };
+
+        // Handle Task Double Click
+        const handleTaskDoubleClick = (week, day, index) => {
+            editTask(week, day, index);
+        };
+
+        // Debounced Search
+        let searchTimeout;
+        const debouncedSearch = () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                DOM.searchClear.classList.toggle('visible', DOM.taskSearch.value.trim().length > 0);
+                updateTasks();
+            }, 300);
+        };
+
+        // Clear Search
+        const clearSearch = () => {
+            DOM.taskSearch.value = '';
+            DOM.searchClear.classList.remove('visible');
+            DOM.taskSearch.focus();
+            updateTasks();
+        };
+
+        // Update Task Stats
+        const updateTaskStats = () => {
+            const week = `Week${state.currentWeek}`;
+            const tasks = state.tasks[week]?.[state.currentDay] || [];
+            const total = tasks.length;
+            const completed = tasks.filter(t => t.completed === true).length;
+            const completion = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            DOM.taskCount.textContent = `Task: ${completed}/${total}`;
+            DOM.totalTasks.textContent = total;
+            DOM.completedTasks.textContent = completed;
+            DOM.completionPercentage.textContent = `${completion}%`;
+            DOM.progressBarFill.style.width = `${completion}%`;
+        };
+
+        // Render Task
+        const renderTask = (week, day, index, task) => {
+            const subjectColor = task.subjectColor || (['MATHS', 'ENGLISH'].includes(task.subject) ? 'text-green-600' : 'text-red-600');
+            const statusClass = task.completed === true ? 'bg-green-300' : task.completed === false ? 'bg-red-300' : 'bg-white';
+            const timeSpent = utils.formatTime(getTaskTimeSpent(task));
+            const isRunning = task.timerStatus === 'running';
+            return `
+                <div draggable="true" class="task-card ${statusClass} rounded-2xl p-6 flex flex-col md:flex-row items-start space-y-4 md:space-y-0 md:space-x-6 shadow-xl hover:shadow-2xl transition-all duration-300"
+                    data-task-id="${week}-${day}-${index}"
+                    ondragstart="handleDragStart('${week}', '${state.currentDay}', ${index}, this)"
+                    ondragover="event.preventDefault()"
+                    ondragend="handleDragEnd(this)"
+                    ondrop="handleDrop('${week}', '${state.currentDay}', ${index})"
+                    onclick="handleTaskClick('${week}', '${state.currentDay}', ${index}, event)"
+                    ondblclick="handleTaskDoubleClick('${week}', '${state.currentDay}', ${index})">
+                    <div class="flex flex-col space-y-3">
+                        <button onclick="markTaskCompleted('${week}', '${state.currentDay}', ${index}, true)" class="w-5 h-5 rounded-full bg-green-500 text-white flex items-center justify-center hover:bg-green-600 transition duration-200" title="Mark Completed" aria-label="Mark Completed"><i class="fas fa-check text-sm"></i></button>
+                        <button onclick="markTaskCompleted('${week}', '${state.currentDay}', ${index}, false)" class="w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition duration-200" title="Mark Not Completed" aria-label="Mark Not Completed"><i class="fas fa-times text-sm"></i></button>
+                        <button onclick="markTaskCompleted('${week}', '${state.currentDay}', ${index}, null)" class="w-5 h-5 rounded-full bg-white text-gray-700 flex items-center justify-center border border-gray-300 hover:bg-gray-100 transition duration-200" title="Clear Status" aria-label="Clear Status"><i class="fas fa-undo text-sm"></i></button>
+                    </div>
+                    <div class="flex-1 flex flex-col space-y-3 text-center md:text-left">
+                        <span class="${subjectColor} font-semibold text-xl">${task.subject}</span>
+                        <span class="text-gray-800 text-lg">${task.topic || 'No topic'}</span>
+                        <span class="text-gray-600 text-base">${task.details || 'No details provided'}</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="time-spent text-gray-700 text-base mb-4">Time Spent: ${timeSpent}</div>
+                        <div class="flex space-x-3">
+                            <button onclick="${isRunning ? `pauseTaskTimer('${week}', '${state.currentDay}', ${index})` : `startTaskTimer('${week}', '${state.currentDay}', ${index})`}" class="w-9 h-9 rounded-full ${isRunning ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-blue-500 hover:bg-blue-600'} text-white flex items-center justify-center transition duration-200" title="${isRunning ? 'Pause Timer' : 'Start Timer'}" aria-label="${isRunning ? 'Pause Timer' : 'Start Timer'}"><i class="fas ${isRunning ? 'fa-pause' : 'fa-play'} text-lg"></i></button>
+                            <button onclick="stopTaskTimer('${week}', '${state.currentDay}', ${index})" class="w-9 h-9 rounded-full bg-gray-500 text-white hover:bg-gray-600 flex items-center justify-center transition duration-200" title="Stop Timer" aria-label="Stop Timer"><i class="fas fa-stop text-lg"></i></button>
+                            <button onclick="duplicateTaskToNextDay('${week}', '${state.currentDay}', ${index})" class="w-9 h-9 rounded-full bg-yellow-500 text-white hover:bg-yellow-600 flex items-center justify-center transition duration-200" title="Duplicate Task" aria-label="Duplicate Task"><i class="fas fa-copy text-lg"></i></button>
+                            <button onclick="showDeleteConfirm('${week}', '${state.currentDay}', ${index})" class="w-9 h-9 rounded-full bg-red-500 text-white hover:bg-red-600 flex items-center justify-center transition duration-200" title="Delete Task" aria-label="Delete Task"><i class="fas fa-trash text-lg"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        // Update Tasks
+        const updateTasks = () => {
+            const week = `Week${state.currentWeek}`;
+            const tasks = state.tasks[week]?.[state.currentDay] || [];
+            const query = DOM.taskSearch.value.trim().toLowerCase();
+            const filteredTasks = query ? tasks.map((t, i) => ({ task: t, i })).filter(({ task }) => 
+                task.subject.toLowerCase().includes(query) || task.topic.toLowerCase().includes(query)
+            ) : tasks.map((t, i) => ({ task: t, i }));
+            
+            DOM.taskList.innerHTML = filteredTasks.map(({ task, i }) => renderTask(week, state.currentDay, i, task)).join('');
+            updateTaskStats();
+            updateDailySummary();
+        };
+
+        // Initialize App
+        const initializeApp = () => {
+            loadData();
+            updateWeeks();
+            calculateCurrentWeekAndDay();
+            updateDateDisplay();
+            updateTimeDisplay();
+            updateTasks();
+            updateDeletedTasksList();
+        };
+
+        // Initialize on DOM Load
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>
